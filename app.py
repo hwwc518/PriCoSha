@@ -30,10 +30,10 @@ def login():
     connection.commit()
 
     if(result):
-        if username == 'user' and password == 'password':
+        if username == result[username] and password == result[password]:
         session['logged_in'] = True
     else:
-        flash('password DOES NOT EXIST .__.')
+        flash('Entered username/password DO NOT EXIST .__.')
         return render_template('login.html')
 
     return index()
