@@ -1,6 +1,14 @@
 from flask import Flask, flash, request, session, render_template
+import pymysql.cursors
 
 app = Flask(__name__)
+
+connection = pymysql.connect(host='localhost',
+                           user='user',
+                           password='passwd',
+                           db='db',
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
 
 @app.route('/')
 def index():
@@ -8,7 +16,8 @@ def index():
         return render_template('login.html')
     else:
         return render_template('home.html')
-@app.route('/login', methods=['POST'])
+
+@app.route('/login', methods=['POST','GET'])
 def login():
     if request.form['username'] == 'user' and request.form['password'] == 'password':
         session['logged_in'] = True
