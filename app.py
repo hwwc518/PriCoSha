@@ -28,12 +28,14 @@ def login():
         result = cursor.fetchone()
         print(result)
     connection.commit()
-    
-    
-    if username == 'user' and password == 'password':
+
+    if(result):
+        if username == 'user' and password == 'password':
         session['logged_in'] = True
     else:
         flash('password DOES NOT EXIST .__.')
+        return render_template('login.html')
+
     return index()
 
 @app.route("/logout")
