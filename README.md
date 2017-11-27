@@ -1,5 +1,5 @@
-#COURSE PROJECT
-#Project Overview
+# COURSE PROJECT
+# Project Overview
 
 The course project this semester is PriCoSha, a system for privately sharing content items
 among groups of people. PriCoSha gives users somewhat more privacy than many content
