@@ -19,7 +19,18 @@ def index():
 
 @app.route('/login', methods=['POST','GET'])
 def login():
-    if request.form['username'] == 'user' and request.form['password'] == 'password':
+    username = request.form['username']
+    password = request.form['password']
+    
+    with connection.cursor() as cursor:
+        sql = "SELECT * FROM user WHERE username = %s and password = %s"
+        cursor.execute(sql, (username, password))
+        result = cursor.fetchone()
+        print(result)
+    connection.commit()
+    
+    
+    if username == 'user' and password == 'password':
         session['logged_in'] = True
     else:
         flash('password DOES NOT EXIST .__.')
