@@ -30,7 +30,7 @@ def login():
     connection.commit()
 
     if(result):
-        if username == result[username] and password == result[password]:
+        if username == result['username'] and password == result['password']:
         session['logged_in'] = True
     else:
         flash('Entered username/password DO NOT EXIST .__.')
