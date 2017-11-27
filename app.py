@@ -69,26 +69,37 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html', form=form)
 
-# @app.route('/login', methods=['POST','GET'])
-# def login():
-#     username = request.form['username']
-#     password = request.form['password']
-    
-#     with connection.cursor() as cursor:
-#         sql = "SELECT * FROM user WHERE username = %s and password = %s"
-#         cursor.execute(sql, (username, password))
-#         result = cursor.fetchone()
-#         print(result)
-#     connection.commit()
+@app.route('/login', methods=['POST','GET'])
+def login():
+    if request.method == 'POST':
+        # Get form fields 
+        username = request.form['username']
+        password_candidate = request.form['password']
+       
+        # Creating cursor
+        cur = mysql.connection.cursor()
 
-#     if(result):
-#         if username == result['username'] and password == result['password']:
-#             session['logged_in'] = True
-#     else:
-#         flash('Entered username/password DO NOT EXIST .__.')
-#         return render_template('login.html')
+        # Get users from database
+        query = cur.execute("SELECT * FROM user WHERE username = %s", [username])
 
-#     return index()
+        # If you get a result from query
+        if(query > 0):
+            # get stored hashed password
+            data = cur.fetchone()
+            password = data['password']
+
+            # Compare the passwords
+            if sha256_crypt.verify(password, password_candidate):
+                app.logger.info('PASSWORDS MATCH')
+                # session['logged_in'] = True
+            else:
+                app.logger.info('PASSWORDS DO NOT MATCH')
+        else:
+            flash('Entered username/password DO NOT EXIST .__.')
+            # return render_template('login.html')
+            app.logger.info('NO USER')
+
+    return render_template('login.html')
 
 # @app.route("/logout")
 # def logout():

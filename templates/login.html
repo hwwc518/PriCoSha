@@ -1,9 +1,9 @@
-<!--{% extends 'home.html' %}-->
+{% extends 'home.html' %}
 
 {% block body %}
-    {% if session['logged_in'] %}
-        <h1>You are already logged in!!</h1>
-    {% else %}
+<!--     {% if session['logged_in'] %} -->
+<!--         <h1>You are already logged in!!</h1> -->
+<!--     {% else %} -->
 
 <div class="jumbotron text-center">
     <h1>Welcome to PriCoSha - Login Page!</h1>
@@ -29,4 +29,4 @@
 
 </form>
 </div>
-{% endif %}
+{% endblock %}
