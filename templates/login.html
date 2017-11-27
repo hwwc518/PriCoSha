@@ -1,0 +1,32 @@
+<!--{% extends 'home.html' %}-->
+
+{% block body %}
+    {% if session['logged_in'] %}
+        <h1>You are already logged in!!</h1>
+    {% else %}
+
+<div class="jumbotron text-center">
+    <h1>Welcome to PriCoSha - Login Page!</h1>
+    <p class="lead">Pls log in with valid username and password!</p>
+
+    <form action="/login" method="POST">
+    <div class="login">
+        <div class="login-page">
+            <div>
+                <h1>Login</h1>
+            </div>
+            <br />
+            <div class="login-form">
+                <input type="text" value="" placeholder="username" name="username" />
+                <input type="password" value="" placeholder="password" name="password" />
+            </div>
+            
+                <input type="submit" value="login" />
+            </div>
+            <br/>
+        </div>
+    </div>
+
+</form>
+</div>
+{% endif %}
