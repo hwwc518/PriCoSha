@@ -98,7 +98,7 @@ def login():
             password = data['password']
 
             # Compare the passwords
-            if sha256_crypt.verify(password, password_candidate):
+            if sha256_crypt.verify(password_candidate, password):
                 # Valid User
                 session['logged_in'] = True
                 session['username'] = username
