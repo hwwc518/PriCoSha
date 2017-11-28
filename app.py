@@ -1,5 +1,5 @@
 from flask import Flask, flash, request, session, render_template, url_for,\
-logging
+logging, redirect
 from flask_mysqldb import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
@@ -8,14 +8,22 @@ import pymysql.cursors
 app = Flask(__name__)
 
 # Config MySQL
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'password'
-app.config['MYSQL_DB'] = 'Pricosha'
-app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
+# app.config['MYSQL_HOST'] = 'localhost'
+# app.config['MYSQL_USER'] = 'root'
+# app.config['MYSQL_PASSWORD'] = 'password'
+# app.config['MYSQL_DB'] = 'Pricosha'
+# app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
 # initialize MySQL
-mysql = MySQL(app)
+# mysql = MySQL(app)
+
+conn = pymysql.connect(host='localhost',
+                       # port=8889,
+                       user='root',
+                       password='password',
+                       db='Pricosha',
+                       charset='utf8mb4',
+                       cursorclass=pymysql.cursors.DictCursor)
 
 # connection = pymysql.connect(host='localhost',
 #                            user='user',
@@ -38,7 +46,7 @@ class RegisterForm(Form):
     password = PasswordField('Password', [
             validators.DataRequired(),
             validators.EqualTo('confirm', message='Passwords do not match'),
-            validators.Length(min=5, max=50)
+            validators.Length(min=5, max=100)
         ])
     confirm = PasswordField('Confirm Password')
 
@@ -49,17 +57,18 @@ def register():
         first_name = form.first_name.data
         last_name = form.last_name.data
         username = form.username.data
+        # Switch from sha to md5 b/c sha is too long
         password = sha256_crypt.encrypt(str(form.password.data))
 
         # Create cursor
-        cur = mysql.connection.cursor()
+        cur = conn.cursor()
 
         # Execute Query
         cur.execute("INSERT INTO Person(first_name, last_name, username, password)\
                 VALUES(%s, %s, %s, %s)", (first_name, last_name, username, password))
 
         # Commit to DB
-        mysql.connection.commit()
+        conn.commit()
 
         # Close the Connection
         cur.close()
@@ -77,7 +86,7 @@ def login():
         password_candidate = request.form['password']
        
         # Creating cursor
-        cur = mysql.connection.cursor()
+        cur = conn.cursor()
 
         # Get users from database
         query = cur.execute("SELECT * FROM Person WHERE username = %s", [username])
@@ -121,7 +130,7 @@ def dashboard():
     return render_template('dashboard.html')
 
 if __name__ == '__main__':
-    app.secret_key = 'secret123'
+    app.secret_key = 'super secret key'
     app.run(debug=True)
 
 
