@@ -3,6 +3,7 @@ logging, redirect
 from flask_mysqldb import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
+from functools import wraps
 import pymysql.cursors
 
 app = Flask(__name__)
@@ -117,6 +118,17 @@ def login():
 
     return render_template('login.html')
 
+# Check for if user logged in
+def is_logged_in(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if 'logged_in' in session:
+            return f(*args, **kwargs)
+        else:
+            flash('Not authorized, please login', 'danger')
+            return redirect(url_for('login'))
+    return wrap
+
 # Logout function
 @app.route("/logout")
 def logout():
@@ -126,6 +138,7 @@ def logout():
 
 # Leads to dashboard
 @app.route('/dashboard')
+@is_logged_in
 def dashboard():
     return render_template('dashboard.html')
 
