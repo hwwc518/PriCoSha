@@ -3,14 +3,14 @@ logging
 from flask_mysqldb import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
-# import pymysql.cursors
+import pymysql.cursors
 
 app = Flask(__name__)
 
 # Config MySQL
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'passwd'
+app.config['MYSQL_PASSWORD'] = 'password'
 app.config['MYSQL_DB'] = 'Pricosha'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
@@ -80,7 +80,7 @@ def login():
         cur = mysql.connection.cursor()
 
         # Get users from database
-        query = cur.execute("SELECT * FROM user WHERE username = %s", [username])
+        query = cur.execute("SELECT * FROM Person WHERE username = %s", [username])
 
         # If you get a result from query
         if(query > 0):
@@ -108,10 +108,17 @@ def login():
 
     return render_template('login.html')
 
-# @app.route("/logout")
-# def logout():
-#     session['logged_in'] = False
-#     return index()
+# Logout function
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash('You are now logged out', 'success')
+    return redirect(url_for('login'))
+
+# Leads to dashboard
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')
 
 if __name__ == '__main__':
     app.secret_key = 'secret123'
