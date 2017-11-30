@@ -1,10 +1,10 @@
-from flask import Flask, flash, request, session, render_template, url_for,\
+from flask import Flask, flash, app, request, session, render_template, url_for,\
 logging, redirect
 from flask_mysqldb import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from functools import wraps
-import datetime
+import datetime import timedelta
 import pymysql.cursors
 
 app = Flask(__name__)
@@ -15,6 +15,16 @@ conn = pymysql.connect(host='localhost',
                        db='Pricosha',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
+
+
+# timeout function
+
+@app.before_request
+def make_session_permanent():
+    sesison.modified = True
+    session.permanent = True
+    app.permanent_session_lifetime = timedelta(minutes=30)
+    flash("You have been logged out due to inactivity.")
 
 @app.route('/')
 def index():
