@@ -4,34 +4,17 @@ from flask_mysqldb import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from functools import wraps
+import datetime
 import pymysql.cursors
 
 app = Flask(__name__)
 
-# Config MySQL
-# app.config['MYSQL_HOST'] = 'localhost'
-# app.config['MYSQL_USER'] = 'root'
-# app.config['MYSQL_PASSWORD'] = 'password'
-# app.config['MYSQL_DB'] = 'Pricosha'
-# app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
-
-# initialize MySQL
-# mysql = MySQL(app)
-
 conn = pymysql.connect(host='localhost',
-                       # port=8889,
                        user='root',
                        password='password',
                        db='Pricosha',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
-
-# connection = pymysql.connect(host='localhost',
-#                            user='user',
-#                            password='passwd',
-#                            db='db',
-#                            charset='utf8mb4',
-#                            cursorclass=pymysql.cursors.DictCursor)
 
 @app.route('/')
 def index():
@@ -51,6 +34,28 @@ class RegisterForm(Form):
         ])
     confirm = PasswordField('Confirm Password')
 
+################# CONTENT FORM CLASS ##################
+#content form should contain a body of content (data)
+# class ContentForm(Form):
+#     content = ContentField("Post something: ", validators=[DataRequired()])
+
+#####################################################
+
+
+
+############### MODEL STRUCTURE FOR CONTENT ###########
+#create a class model for the content tailored to the user
+#content should require timestamp,
+#class Content(Model):
+#    # username = ForeignKeyField(username, related_name= )
+#    timestamp = DateTimeField(default=datetime.datetime.now)
+#    #tagged =
+
+#    body_content=Textfield()
+#####################################################
+
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm(request.form)
@@ -63,7 +68,9 @@ def register():
 
         # Create cursor
         cur = conn.cursor()
-
+        
+        # Check if Username already exists
+        if ()
         # Execute Query
         cur.execute("INSERT INTO Person(first_name, last_name, username, password)\
                 VALUES(%s, %s, %s, %s)", (first_name, last_name, username, password))
@@ -118,6 +125,18 @@ def login():
 
     return render_template('login.html')
 
+################### POSTING CONTENT ################
+# @app.route('/post_content', methods = ('GET', 'POST'))
+# def post_content():
+#     form = forms.ContentForm()
+#     if form.validate_on_submit():
+#         flash('Content posted')
+#         return redirect(url_for('index'))
+#     return render_template('post_content.html', form=form)
+
+#####################################################
+
+
 # Check for if user logged in
 def is_logged_in(f):
     @wraps(f)
@@ -129,6 +148,8 @@ def is_logged_in(f):
             return redirect(url_for('login'))
     return wrap
 
+# search function
+# add timeout session for extra feature
 # Logout function
 @app.route("/logout")
 def logout():
@@ -145,5 +166,6 @@ def dashboard():
 if __name__ == '__main__':
     app.secret_key = 'super secret key'
     app.run(debug=True)
+
 
 
