@@ -65,3 +65,10 @@ PRIMARY KEY (id, group_name, username),
 FOREIGN KEY (id) REFERENCES Content(id),
 FOREIGN KEY (group_name, username) REFERENCES FriendGroup(group_name, username)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE blog(
+	blog_post varchar(500),
+	username varchar(50),
+	ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+	FOREIGN KEY (username) REFERENCES Person(username)
+);

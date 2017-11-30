@@ -4,7 +4,7 @@ from flask_mysqldb import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from functools import wraps
-import datetime import timedelta
+from datetime import datetime, timedelta
 import pymysql.cursors
 
 app = Flask(__name__)
@@ -18,13 +18,13 @@ conn = pymysql.connect(host='localhost',
 
 
 # timeout function
-
 @app.before_request
 def make_session_permanent():
-    sesison.modified = True
     session.permanent = True
-    app.permanent_session_lifetime = timedelta(minutes=30)
-    flash("You have been logged out due to inactivity.")
+    app.permanent_session_lifetime = timedelta(minutes=1)
+    # if 'logged_in' not in session:
+    #     flash('Timed out, please login again', 'danger')
+    #     return redirect(url_for('login'))
 
 @app.route('/')
 def index():
@@ -43,28 +43,6 @@ class RegisterForm(Form):
             validators.Length(min=5, max=100)
         ])
     confirm = PasswordField('Confirm Password')
-
-################# CONTENT FORM CLASS ##################
-#content form should contain a body of content (data)
-# class ContentForm(Form):
-#     content = ContentField("Post something: ", validators=[DataRequired()])
-
-#####################################################
-
-
-
-############### MODEL STRUCTURE FOR CONTENT ###########
-#create a class model for the content tailored to the user
-#content should require timestamp,
-#class Content(Model):
-#    # username = ForeignKeyField(username, related_name= )
-#    timestamp = DateTimeField(default=datetime.datetime.now)
-#    #tagged =
-
-#    body_content=Textfield()
-#####################################################
-
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -135,18 +113,6 @@ def login():
 
     return render_template('login.html')
 
-################### POSTING CONTENT ################
-# @app.route('/post_content', methods = ('GET', 'POST'))
-# def post_content():
-#     form = forms.ContentForm()
-#     if form.validate_on_submit():
-#         flash('Content posted')
-#         return redirect(url_for('index'))
-#     return render_template('post_content.html', form=form)
-
-#####################################################
-
-
 # Check for if user logged in
 def is_logged_in(f):
     @wraps(f)
@@ -171,7 +137,28 @@ def logout():
 @app.route('/dashboard')
 @is_logged_in
 def dashboard():
-    return render_template('dashboard.html')
+    username = session['username']
+    cursor = conn.cursor();
+    query = 'SELECT ts, blog_post FROM blog WHERE username = %s ORDER BY ts DESC'
+    cursor.execute(query, (username))
+    data = cursor.fetchall()
+    cursor.close()
+    return render_template('dashboard.html', username=username, posts=data)
+
+@app.route('/post', methods=['GET', 'POST'])
+def post():
+     if 'logged_in' in session:
+	username = session['username']
+	cursor = conn.cursor();
+	blog = request.form['blog']
+	query = 'INSERT INTO blog (blog_post, username) VALUES(%s, %s)'
+	cursor.execute(query, (blog, username))
+	conn.commit()
+	cursor.close()
+	return redirect(url_for('dashboard'))
+     else:
+        flash('Timed out, please login again', 'danger')
+        return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.secret_key = 'super secret key'

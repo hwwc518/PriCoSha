@@ -1,6 +1,40 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-    <h1>Dashboard</h1>
-    <p>Welcome {{session.username}}</p>
+    <!-- <h1>Dashboard</h1> -->
+    <!-- <p>Welcome {{session.username}}</p> -->
+    <!-- <form action="/post" method="POST"> -->
+    <!--     <input type="text" name="blog" placeholder="post" required/> </br> -->
+    <!--     <input type="submit" value=POST /> -->
+    <!-- </form> -->
+
+    <!-- <style type="text/css"> -->
+<!-- table th, td{ -->
+
+<!-- } -->
+    <form action="/post" method="POST">
+        <h1>Welcome {{username}}</h1> 
+        <input type="text" name = "blog" placeholder="post" required/>
+        </br></br>
+        <input type="submit" class="btn btn-primary" value = Post />
+    </form>
+
+    <style type="text/css">
+        table, th, td{
+            border: 1px solid black;
+            margin-top: 1cm;
+        }
+    </style>
+
+    <table>
+        <th>Time</th>
+        <th>Post</th>
+
+    {% for line in posts %}
+        <tr>
+            <td>{{line.ts}}</td>
+            <td>{{line.blog_post}}</td>
+        </tr>
+    {% endfor %}
+    </table>
 {% endblock %}
