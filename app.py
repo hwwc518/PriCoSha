@@ -70,7 +70,7 @@ def register():
         cur = conn.cursor()
         
         # Check if Username already exists
-        if ()
+        # if ()
         # Execute Query
         cur.execute("INSERT INTO Person(first_name, last_name, username, password)\
                 VALUES(%s, %s, %s, %s)", (first_name, last_name, username, password))
