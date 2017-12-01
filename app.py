@@ -58,20 +58,33 @@ def register():
         cur = conn.cursor()
         
         # Check if Username already exists
-        # if ()
-        # Execute Query
-        cur.execute("INSERT INTO Person(first_name, last_name, username, password)\
-                VALUES(%s, %s, %s, %s)", (first_name, last_name, username, password))
+        query = 'SELECT * FROM Person WHERE username = %s'
+        cur.execute(query, (username))
 
-        # Commit to DB
-        conn.commit()
+        # Store query in variable
+        data = cur.fetchone()
 
-        # Close the Connection
-        cur.close()
-        
-        flash('You are now registered and can log in', 'success')
+        # If user already exists
+        if (data):
+            # error = "This user already exists"
+            flash('This username is already taken')
+            cur.close()
+            return redirect(url_for('register'))
+            # return render_template('register.html', error=error)
+        else:
+            # Execute Query
+            cur.execute("INSERT INTO Person(first_name, last_name, username, password)\
+                    VALUES(%s, %s, %s, %s)", (first_name, last_name, username, password))
 
-        return redirect(url_for('login'))
+            # Commit to DB
+            conn.commit()
+
+            # Close the Connection
+            cur.close()
+            
+            flash('You are now registered and can log in', 'success')
+
+            return redirect(url_for('login'))
     return render_template('register.html', form=form)
 
 @app.route('/login', methods=['POST','GET'])
