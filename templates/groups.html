@@ -1,0 +1,25 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<!-- for later -->
+    <!-- <h1>Add Friend</h1> -->
+<!-- create groups     -->
+    <h2>Create Group</h2>
+    <form action="/createGroup" method="POST">
+        <label for="group_name">Group Name</label>
+        <input type="text" class = "form-control" name = "group_name"
+               id = "group_name" required/><br>
+        <label for="Desc">Description</label>
+        <input type="text" class = "form-control" name = "description"
+               id = "Desc" required/><br>
+        <div id="container">
+            <label for="member">Number of members:</label>
+            <input type="text" class = "form-control" name = "member"
+                id = "member" required/><br>
+            <a href="#" id="filldetails" onclick="addFields()">Fill Details</a>
+        </div>
+        <!-- <p><input type="submit" class="btn btn-primary" value="Create"></p> -->
+        <script type="text/javascript" src="../js/scripts.js"></script>
+    </form>
+{% endblock %}
+
