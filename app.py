@@ -174,6 +174,16 @@ def post():
         flash('Timed out, please login again', 'danger')
         return redirect(url_for('login'))
 
+# Groups page - create and manage groups / friends
+@app.route('/groups')
+def groups(): 
+    if 'logged_in' in session:
+        return render_template('groups.html')    
+    else:
+        flash('Timed out, please login again', 'danger')
+        return redirect(url_for('login'))
+
+
 if __name__ == '__main__':
     app.secret_key = "It's a secret to everybody"
     app.run(debug=True)

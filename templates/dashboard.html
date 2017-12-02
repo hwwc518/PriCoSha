@@ -23,11 +23,11 @@
             </tr>
         </thead>
 
-    {% for line in posts %}
-        <tr>
-            <td>{{line.timest}}</td>
-            <td>{{line.content_name}}</td>
-        </tr>
-    {% endfor %}
+        {% for line in posts %}
+            <tr>
+                <td>{{line.timest}}</td>
+                <td>{{line.content_name}}</td>
+            </tr>
+        {% endfor %}
     </table>
 {% endblock %}
