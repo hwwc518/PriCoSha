@@ -152,7 +152,8 @@ def logout():
 def dashboard():
     username = session['username']
     cursor = conn.cursor();
-    query = 'SELECT ts, blog_post FROM blog WHERE username = %s ORDER BY ts DESC'
+    query = 'SELECT timest, content_name FROM Content WHERE username = %s ORDER BY\
+    timest DESC'
     cursor.execute(query, (username))
     data = cursor.fetchall()
     cursor.close()
@@ -163,9 +164,9 @@ def post():
      if 'logged_in' in session:
 	username = session['username']
 	cursor = conn.cursor();
-	blog = request.form['blog']
-	query = 'INSERT INTO blog (blog_post, username) VALUES(%s, %s)'
-	cursor.execute(query, (blog, username))
+	content_name = request.form['content_name']
+	query = 'INSERT INTO Content (content_name, username) VALUES(%s, %s)'
+	cursor.execute(query, (content_name, username))
 	conn.commit()
 	cursor.close()
 	return redirect(url_for('dashboard'))
@@ -174,7 +175,7 @@ def post():
         return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    app.secret_key = 'super secret key'
+    app.secret_key = "It's a secret to everybody"
     app.run(debug=True)
 
 

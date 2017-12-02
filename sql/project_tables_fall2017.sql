@@ -11,7 +11,7 @@ CREATE TABLE Content(
 	username VARCHAR (50),
 	timest TIMESTAMP,
 	file_path VARCHAR (100),
-	content_name VARCHAR (50),
+	content_name VARCHAR (250),
 	public BOOLEAN,
 	PRIMARY KEY (id),
 	FOREIGN KEY (username) REFERENCES Person (username)
@@ -65,10 +65,3 @@ PRIMARY KEY (id, group_name, username),
 FOREIGN KEY (id) REFERENCES Content(id),
 FOREIGN KEY (group_name, username) REFERENCES FriendGroup(group_name, username)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-CREATE TABLE blog(
-	blog_post varchar(500),
-	username varchar(50),
-	ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
-	FOREIGN KEY (username) REFERENCES Person(username)
-);
