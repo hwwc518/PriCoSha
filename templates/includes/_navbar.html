@@ -5,8 +5,9 @@
       </div>
       <div class="collapse navbar-collapse" id="navbar">
         <ul class="nav navbar-nav">
+          {% if session.logged_in %}
           <li>
-            <a href="/">Home</a>
+            <a href="/dashboard">Dashboard</a>
           </li>
           <li>
             <a href="/tags">Tags</a>
@@ -14,13 +15,14 @@
           <li>
             <a href="/groups">Groups</a>
           </li>
+        {% endif %}
         </ul>
         <!-- displays corresponding info -->  
         <ul class="nav navbar-nav navbar-right">
           {% if session.logged_in %}
-          <li>
-            <a href="/dashboard">Dashboard</a>
-          </li>
+          <!-- <li> -->
+          <!--   <a href="/dashboard">Dashboard</a> -->
+          <!-- </li> -->
           <li>
             <a href="/logout">Logout</a>
           </li>

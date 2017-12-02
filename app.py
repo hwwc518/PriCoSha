@@ -144,7 +144,7 @@ def is_logged_in(f):
 def logout():
     session.clear()
     flash('You are now logged out', 'success')
-    return redirect(url_for('login'))
+    return render_template('home.html')
 
 # Leads to dashboard
 @app.route('/dashboard')
