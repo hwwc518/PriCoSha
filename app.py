@@ -151,7 +151,7 @@ def logout():
 @is_logged_in
 def dashboard():
     username = session['username']
-    cursor = conn.cursor();
+    cursor = conn.cursor()
     query = 'SELECT timest, content_name FROM Content WHERE username = %s ORDER BY\
     timest DESC'
     cursor.execute(query, (username))
@@ -163,7 +163,7 @@ def dashboard():
 def post():
      if 'logged_in' in session:
 	username = session['username']
-	cursor = conn.cursor();
+	cursor = conn.cursor()
 	content_name = request.form['content_name']
 	query = 'INSERT INTO Content (content_name, username) VALUES(%s, %s)'
 	cursor.execute(query, (content_name, username))
@@ -178,6 +178,32 @@ def post():
 @app.route('/groups')
 def groups(): 
     if 'logged_in' in session:
+        # check for create group action
+        if request.form['mems']:
+            cursor = conn.cursor()
+            creator = session['username']
+            group_name = request.form['group_name']
+            description = request.form['description'] 
+            mems = request.form['mems']
+            listMems = mems.split(', ')
+            # add creator first
+            query = 'INSERT INTO Member (username, group_name, username_creator)\
+            VALUES(%s, %s, %s)'
+            query2 = 'INSERT INTO FriendGroup (group_name, username, description)\
+            VALUES(%s, %s, %s)'
+	    cursor.execute(query, (creator, group_name, creator))
+	    cursor.execute(query2, (group_name, creator, description))
+	    conn.commit()
+            # for all members in query
+	    for mem in listMems:
+                query = 'INSERT INTO Member (username, group_name, username_creator)\
+                VALUES(%s, %s, %s)'
+                query2 = 'INSERT INTO FriendGroup (group_name, username, description)\
+                VALUES(%s, %s, %s)'
+                cursor.execute(query, (mem, group_name, creator))
+                cursor.execute(query2, (group_name, mem, description))
+                conn.commit()
+
         return render_template('groups.html')    
     else:
         flash('Timed out, please login again', 'danger')

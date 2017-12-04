@@ -12,14 +12,18 @@
         <label for="Desc">Description</label>
         <input type="text" class = "form-control" name = "description"
                id = "Desc" required/><br>
-        <div id="container">
-            <label for="member">Number of members:</label>
-            <input type="text" class = "form-control" name = "member"
-                id = "member" required/><br>
-            <a href="#" id="filldetails" onclick="addFields()">Fill Details</a>
-        </div>
-        <!-- <p><input type="submit" class="btn btn-primary" value="Create"></p> -->
-        <script type="text/javascript" src="../js/scripts.js"></script>
+        <!-- <div id="container"> -->
+        <!--     <label for="member">Number of members:</label> -->
+        <!--     <input type="text" class = "form-control" name = "member" -->
+        <!--         id = "member" required/><br> -->
+        <!--     <a href="#" id="filldetails" onclick="addFields()">Fill Details</a> -->
+        <!-- </div> -->
+        <label for="addMems">Please enter names of members in a comma, space seperated
+        list, ie 'bob123, alice234, eve345'</label>
+        <input type="text" class = "form-control" name = "mems"
+        id = "addMems" required/><br>
+        <p><input type="submit" class="btn btn-primary" value="Create"></p>
+        <!-- <script type="text/javascript" src="../js/scripts.js"></script> -->
     </form>
 {% endblock %}
 
