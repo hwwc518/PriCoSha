@@ -203,7 +203,9 @@ def groups():
                 cursor.execute(query, (mem, group_name, creator))
                 cursor.execute(query2, (group_name, mem, description))
                 conn.commit()
-
+           
+            # close connection
+            cursor.close()
         return render_template('groups.html')    
     else:
         flash('Timed out, please login again', 'danger')
