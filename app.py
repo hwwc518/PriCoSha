@@ -11,7 +11,8 @@ app = Flask(__name__)
 
 conn = pymysql.connect(host='localhost',
                        user='root',
-                       password='password',
+                       password='root',
+                       port=8889,
                        db='Pricosha',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
@@ -158,6 +159,26 @@ def dashboard():
     data = cursor.fetchall()
     cursor.close()
     return render_template('dashboard.html', username=username, posts=data)
+
+
+@app.route('/sendrequest', methods=['GET','POST'])
+def send_friend_request():
+    
+    username = request.form['username']
+    group_name = request.form['group_name']
+    username_creator = request.form['username_creator']
+    
+    cur = conn.cursor()
+    query = "INSERT INTO Member VALUES(%s, %s, %s)"
+    cur.execute(query, (username, group_name, username_creator))
+    conn.commit()
+    cur.close()
+    
+    return render_template('home.html')
+
+@app.route('/addfriend', methods=['GET','POST'])
+def addfriend():
+    return render_template('addfriend.html')
 
 @app.route('/post', methods=['GET', 'POST'])
 def post():
