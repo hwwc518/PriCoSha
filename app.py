@@ -169,12 +169,23 @@ def send_friend_request():
     username_creator = request.form['username_creator']
     
     cur = conn.cursor()
-    query = "INSERT INTO Member VALUES(%s, %s, %s)"
-    cur.execute(query, (username, group_name, username_creator))
-    conn.commit()
-    cur.close()
+    query = "SELECT * FROM Member WHERE username = %s && group_name = %s"
+    cursor.execute(query, (username, group_name))
+    data = cursor.fetchone()
+    #error = None
     
-    return render_template('home.html')
+    if(data)
+        #error = "This friend is already in your friend group!"
+        flash('This friend is already in your friend group!')
+        return render_template('addfriend.html')
+        #return render_template('addfriend.html', error = error)
+    else:
+        query = "INSERT INTO Member VALUES(%s, %s, %s)"
+        cur.execute(query, (username, group_name, username_creator))
+        conn.commit()
+        cur.close()
+    
+        return render_template('home.html')
 
 @app.route('/addfriend', methods=['GET','POST'])
 def addfriend():
