@@ -174,7 +174,7 @@ def send_friend_request():
     data = cursor.fetchone()
     #error = None
     
-    if(data)
+    if (data):
         #error = "This friend is already in your friend group!"
         flash('This friend is already in your friend group!')
         return render_template('addfriend.html')
@@ -193,59 +193,63 @@ def addfriend():
 
 @app.route('/post', methods=['GET', 'POST'])
 def post():
-     if 'logged_in' in session:
-	username = session['username']
-	cursor = conn.cursor()
-	content_name = request.form['content_name']
-	query = 'INSERT INTO Content (content_name, username) VALUES(%s, %s)'
-	cursor.execute(query, (content_name, username))
-	conn.commit()
-	cursor.close()
-	return redirect(url_for('dashboard'))
-     else:
+    if 'logged_in' in session:
+        username = session['username']
+        cursor = conn.cursor()
+        content_name = request.form['content_name']
+        query = 'INSERT INTO Content (content_name, username) VALUES(%s, %s)'
+        cursor.execute(query, (content_name, username))
+        conn.commit()
+        cursor.close()
+        return redirect(url_for('dashboard'))
+    else:
         flash('Timed out, please login again', 'danger')
         return redirect(url_for('login'))
+
+@app.route('/creategroup')
+def creategroup():
+    return render_template('groups.html')
 
 # Groups page - create and manage groups / friends
 @app.route('/groups')
 def groups(): 
     if 'logged_in' in session:
         # check for create group action
-        if request.form['mems']:
-            cursor = conn.cursor()
-            creator = session['username']
-            group_name = request.form['group_name']
-            description = request.form['description'] 
-            mems = request.form['mems']
-            listMems = mems.split(', ')
+        #if request.form['mems']:
+        cursor = conn.cursor()
+        creator = session['username']
+        group_name = request.form['group_name']
+        description = request.form['description']
+        mems = request.form['mems']
+        listMems = mems.split(', ')
             # add creator first if not already in
-            query = 'SELECT COUNT(*) FROM Member WHERE username = %s AND group_name = %s'
+        query = 'SELECT COUNT(*) FROM Member WHERE username = %s AND group_name = %s'
             # check logic / not sure if this works
-            if (cursor.execute(query, (creator, group_name)) == 0): 
-                query = 'INSERT INTO Member (username, group_name, username_creator)\
+        if (cursor.execute(query, (creator, group_name)) == 0):
+            query = 'INSERT INTO Member (username, group_name, username_creator)\
                 VALUES(%s, %s, %s)'
-                query2 = 'INSERT INTO FriendGroup (group_name, username, description)\
+            query2 = 'INSERT INTO FriendGroup (group_name, username, description)\
                 VALUES(%s, %s, %s)'
-                cursor.execute(query, (creator, group_name, creator))
-                cursor.execute(query2, (group_name, creator, description))
-                conn.commit()
+            cursor.execute(query, (creator, group_name, creator))
+            cursor.execute(query2, (group_name, creator, description))
+            conn.commit()
             # for all members in query
             invalidMems = []
 	    for mem in listMems:
 	        # verify if member is valid
 	        queryx = 'SELECT COUNT(*) FROM Person WHERE username = %s'
-                if (cursor.execute(queryx, mem) == 1):
-                    query = 'INSERT INTO Member (username, group_name, username_creator)\
+            if (cursor.execute(queryx, mem) == 1):
+                query = 'INSERT INTO Member (username, group_name, username_creator)\
                     VALUES(%s, %s, %s)'
-                    query2 = 'INSERT INTO FriendGroup (group_name, username, description)\
+                query2 = 'INSERT INTO FriendGroup (group_name, username, description)\
                     VALUES(%s, %s, %s)'
-                    cursor.execute(query, (mem, group_name, creator))
-                    cursor.execute(query2, (group_name, mem, description))
-                    conn.commit()
-                else:
-                    invalidMems.append(mem)
+                cursor.execute(query, (mem, group_name, creator))
+                cursor.execute(query2, (group_name, mem, description))
+                conn.commit()
+            else:
+                invalidMems.append(mem)
             # close connection
-            cursor.close()
+        cursor.close()
 
             # if there were invalid members, flash them and redirect
             ## todo: NOT DONE##
