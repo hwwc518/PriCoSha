@@ -221,11 +221,14 @@ def groups():
         description = request.form['description']
         mems = request.form['mems']
         cursor = conn.cursor()
-
+        
         query = 'INSERT INTO FriendGroup (group_name, username, description) VALUES(%s, %s, %s)'
         cursor.execute(query, (group_name, creator, description))
         
         listMems = mems.split(', ')
+        
+        #query2 = 'SELECT COUNT(*) FROM Member WHERE username = %s AND group_name = %s'
+
         
         #for all members in query
         invalidMems = []
@@ -242,6 +245,57 @@ def groups():
         cursor.close()
         flash('The friend group has been successfully added!')
         return redirect(url_for('dashboard'))
+
+
+#       mems = request.form['mems']
+#       listMems = mems.split(', ')
+# add creator first if not already in
+#       query = 'SELECT COUNT(*) FROM Member WHERE username = %s AND group_name = %s'
+# check logic / not sure if this works
+#if (cursor.execute(query, (creator, group_name)) == 0):
+#   query = 'INSERT INTO Member (username, group_name, username_creator)\VALUES(%s, %s, %s)'
+#   query2 = 'INSERT INTO FriendGroup (group_name, username, description)\VALUES(%s, %s, %s)'
+#   cursor.execute(query, (creator, group_name, creator))
+#   cursor.execute(query2, (group_name, creator, description))
+#   conn.commit()
+
+# for all members in query
+#       invalidMems = []
+#       for mem in listMems:
+#	        # verify if member is valid
+#           queryx = 'SELECT COUNT(*) FROM Person WHERE username = %s'
+#           if (cursor.execute(queryx, mem) == 1):
+#               query = 'INSERT INTO Member (username, group_name, username_creator)\VALUES(%s, %s, %s)'
+#               query2 = 'INSERT INTO FriendGroup (group_name, username, description)\VALUES(%s, %s, %s)'
+#               cursor.execute(query, (mem, group_name, creator))
+#               cursor.execute(query2, (group_name, mem, description))
+#               conn.commit()
+#           else:
+#               invalidMems.append(mem)
+
+# close connection
+#   cursor.close()
+
+# if there were invalid members, flash them and redirect
+## todo: NOT DONE##
+###################
+###################
+# if (invalidMems):
+#     flash('')
+
+#return render_template('home.html')
+            # todo: add add member function
+            ###############################
+            ###############################
+            
+            
+#            else:
+#                flash('Timed out, please login again', 'danger')
+#                #didn't work so replacing it temporarily
+#                #return redirect(url_for('login'))
+#                return render_template('home.html')
+
+
 
     else:
         flash('Timed out, please login again', 'danger')
