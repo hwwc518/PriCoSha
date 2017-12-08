@@ -170,8 +170,8 @@ def send_friend_request():
     
     cur = conn.cursor()
     query = "SELECT * FROM Member WHERE username = %s && group_name = %s"
-    cur.execute(query, (username, group_name))
-    data = cur.fetchone()
+    cursor.execute(query, (username, group_name))
+    data = cursor.fetchone()
     #error = None
     
     if (data):
@@ -184,8 +184,8 @@ def send_friend_request():
         cur.execute(query, (username, group_name, username_creator))
         conn.commit()
         cur.close()
-        flash('Your friend {{username}} has been added to your friend group!')
-        return render_template('addfriend.html')
+    
+        return render_template('home.html')
 
 @app.route('/addfriend', methods=['GET','POST'])
 def addfriend():
@@ -211,42 +211,22 @@ def creategroup():
     return render_template('groups.html')
 
 # Groups page - create and manage groups / friends
-@app.route('/groups', methods=['GET','POST'])
-def groups(): 
-    if 'logged_in' in session:
-        # check for create group action
-
-        creator = session['username']
-        group_name = request.form['group_name']
-        description = request.form['description']
-        mems = request.form['mems']
-        cursor = conn.cursor()
-
-        query = 'INSERT INTO FriendGroup (group_name, username, description) VALUES(%s, %s, %s)'
-        cursor.execute(query, (group_name, creator, description))
-        
-        listMems = mems.split(', ')
-        
-        #for all members in query
-        invalidMems = []
-        for mem in listMems:
-            # verify if member is valid
-            queryx = 'SELECT COUNT(*) FROM Person WHERE username = %s'
-            if (cursor.execute(queryx, mem) == 1):
-                query = 'INSERT INTO Member (username, group_name, username_creator) VALUES(%s, %s, %s)'
-                cursor.execute(query, (mem, group_name, creator))
-            else:
-                invalidMems.append(mem)
+@app.route('/groups')
+def groups():
+    creator = session['username']
+    group_name = request.form['group_name']
+    description = request.form['description']
     
-        conn.commit()
-        cursor.close()
-        flash('The friend group has been successfully added!')
-        return redirect(url_for('dashboard'))
+    member = request.form['mems']
+    
+    cursor = conn.cursor()
 
-    else:
-        flash('Timed out, please login again', 'danger')
-        #didn't work so replacing it temporarily
-        return redirect(url_for('login'))
+    query = 'INSERT INTO FriendGroup (group_name, username, description) VALUES(%s, %s, %s)'
+        
+    cursor.execute(query, (group_name, member, description))
+    conn.commit()
+    cursor.close()
+    return render_template('home.html')
 
 
 if __name__ == '__main__':

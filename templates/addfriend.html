@@ -10,14 +10,17 @@
     <h2>Add Friends!</h2>
     <br />
     <form action="/sendrequest" method="POST">
-        <input type="text" name = "username" placeholder="Your Friend's Username" required/> 
+        <label for="username">Friend's Username</label>
+        <input type="text" class = "form-control" name = "username" placeholder="Your Friend's Username" required/> 
         <br/>
-        <input type="text" name = "group_name" placeholder="Group Name" required/>
+        <label for="group_name">Group Name</label>
+        <input type="text" class = "form-control" name = "group_name" placeholder="Group Name" required/>
         <br/>
-        <input type="text" name = "username_creator" placeholder="Your Username" required/>
+        <label for="username_creator">Your Username</label>
+        <input type="text" class = "form-control" name = "username_creator" placeholder="Your Username" required/>
         <br/>
         <br/>
-        <input type="submit" value=Add />
+        <input type="submit" class="btn btn-primary" value=Add />
     </form>
 </body>
 
