@@ -1,6 +1,6 @@
 from flask import Flask, flash, app, request, session, render_template, url_for,\
 logging, redirect
-from flask_mysqldb import MySQL
+# from flask_mysqldb import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from functools import wraps
@@ -13,7 +13,7 @@ conn = pymysql.connect(host='localhost',
                        user='root',
                        password='root',
                        port=8889,
-                       db='Pricosha',
+                       db='pricosha1',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
 
@@ -169,9 +169,9 @@ def send_friend_request():
     username_creator = request.form['username_creator']
     
     cur = conn.cursor()
-    query = "SELECT * FROM Member WHERE username = %s && group_name = %s"
-    cur.execute(query, (username, group_name))
-    data = cur.fetchone()
+    query = "SELECT * FROM Person WHERE username = %s && group_name = %s"
+    cursor.execute(query, (username, group_name))
+    data = cursor.fetchone()
     #error = None
     
     if (data):
@@ -180,7 +180,7 @@ def send_friend_request():
         return render_template('addfriend.html')
         #return render_template('addfriend.html', error = error)
     else:
-        query = "INSERT INTO Member VALUES(%s, %s, %s)"
+        query = "INSERT INTO Person VALUES(%s, %s, %s)"
         cur.execute(query, (username, group_name, username_creator))
         conn.commit()
         cur.close()
@@ -194,17 +194,96 @@ def addfriend():
 @app.route('/post', methods=['GET', 'POST'])
 def post():
     if 'logged_in' in session:
+        #username
         username = session['username']
         cursor = conn.cursor()
         content_name = request.form['content_name']
-        query = 'INSERT INTO Content (content_name, username) VALUES(%s, %s)'
-        cursor.execute(query, (content_name, username))
+        pub_status = True if request.form.get('public') else False
+
+        query = 'INSERT INTO Content (content_name, username, public) VALUES(%s, %s, %s)'
+        cursor.execute(query, (content_name, username, pub_status))
         conn.commit()
         cursor.close()
+
+
         return redirect(url_for('dashboard'))
     else:
         flash('Timed out, please login again', 'danger')
         return redirect(url_for('login'))
+
+'''
+#managing tags
+@app.route('/managetags', methods=['GET', 'POST'])
+def managetags():
+    if 'logged_in' in session:
+        username = session['username']
+        
+        #getting status of content from query
+        cursor = conn.cursor()
+        status = cur.execute('SELECT status FROM Tag WHERE username = username_taggee')
+
+        conn.commit()
+        cursor.close()
+
+        if status == False:
+            flash('Pending approval for content')
+
+'''
+
+#tag function
+@app.route('/tags', methods=['GET' , 'POST'])
+def tags():
+    if 'logged_in' in session:
+        #tagger is the user logged into the session
+        username_tagger = session['username']
+
+        #select content
+        cur = conn.cursor()
+        contentID = cur.execute('SELECT id FROM Content WHERE content_name = %s', id)
+
+
+        #taggee is the username that the tagger picks
+        username_taggee = cur.execute('SELECT username FROM Person WHERE username = %s', username_tagger)
+        #timestamp = cur.execute('SELECT timest FROM Content')
+        status = False
+
+
+        #Case 1: if user is self-tagging
+        if username_tagger == username_taggee:
+            status = True
+            query = cur.execute('INSERT INTO tag (id, username_tagger, username_tagger, status)\
+            VALUES(%s, %s, %s, %s, %s)' , (contentID, username_tagger, username_taggee, status))
+
+            flash('You have tagged yourself in this content!')
+            return redirect(url_for('dashboard'))
+
+        #Case 2: is user is tagging someone else
+        else:
+            status = False
+            query = cur.execute('INSERT INTO tag (id, username_tagger, username_taggee, status)\
+            VALUES(%s, %s, %s, %s, %s)',(contentID, username_tagger, username_taggee, status))
+
+            flash ('You have tagged', username_taggee, 'in this content!')
+            return redirect(url_for('dashboard'))
+        
+        #If the content is not public to taggee, then 
+        #else:
+            #flash('Content item is not visible to this user')
+            #return redirect(url_for('dashboard'))
+
+        conn.commit()
+        cur.close()
+
+    else:
+        flash('Timed out, please login again', 'danger')
+        return redirect(url_for('login'))
+
+@app.route('/accepttag')
+def accepttag():
+ if 'logged_in' in session:
+     username = session['username']
+     cur = conn.cursor   
+
 
 @app.route('/creategroup')
 def creategroup():
@@ -215,7 +294,8 @@ def creategroup():
 def groups(): 
     if 'logged_in' in session:
         # check for create group action
-
+        #if request.form['mems']:
+        cursor = conn.cursor()
         creator = session['username']
         group_name = request.form['group_name']
         description = request.form['description']
