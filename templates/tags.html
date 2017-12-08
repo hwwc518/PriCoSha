@@ -1,0 +1,23 @@
+<html>
+    <head></head>
+    <body>
+    {% extends 'home.html' %} {% block body %}
+        <h2> Manage Tags </h2>
+        <ul>
+        {% for pendingTag in pendingTags %}
+        <li>{{ pendingTag.username_tagger }} tagged you in content {{ pendingTag.id }}
+                <form action = "/manageTags" method = "POST"> 
+                    <input type="hidden" name="tagger" value = "{{ pendingTag.username_tagger }}">
+                    <input type="hidden" name="id" value = "{{ pendingTag.id }}">
+                    <select name="approval">
+                            <option value="accept">Accept</option>
+                            <option value="decline">Decline</option>
+                    </select>
+                        <input type="submit" value = "Submit">
+                </form>
+        </li>
+        {% endfor %}
+    </ul>
+        {% endblock %}
+    </body>
+</html>

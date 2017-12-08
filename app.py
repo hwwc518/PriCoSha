@@ -13,7 +13,7 @@ conn = pymysql.connect(host='localhost',
                        user='root',
                        password='root',
                        port=8889,
-                       db='Pricosha',
+                       db='pricosha1',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
 
@@ -153,7 +153,7 @@ def logout():
 def dashboard():
     username = session['username']
     cursor = conn.cursor()
-    query = 'SELECT timest, content_name FROM Content WHERE username = %s ORDER BY\
+    query = 'SELECT timest, content_name, id FROM Content WHERE username = %s ORDER BY\
     timest DESC'
     cursor.execute(query, (username))
     data = cursor.fetchall()
@@ -211,79 +211,73 @@ def post():
         flash('Timed out, please login again', 'danger')
         return redirect(url_for('login'))
 
-'''
-#managing tags
-@app.route('/managetags', methods=['GET', 'POST'])
-def managetags():
-    if 'logged_in' in session:
-        username = session['username']
-        
-        #getting status of content from query
-        cursor = conn.cursor()
-        status = cur.execute('SELECT status FROM Tag WHERE username = username_taggee')
-
-        conn.commit()
-        cursor.close()
-
-        if status == False:
-            flash('Pending approval for content')
-
-'''
-
 #tag function
-@app.route('/tags', methods=['GET' , 'POST'])
-def tags():
+@app.route('/tag', methods=['GET' , 'POST'])
+def tag():
     if 'logged_in' in session:
         #tagger is the user logged into the session
-        username_tagger = session['username']
+        tagger = session['username']
+        taggee = request.form['taggee']
+        contentID = request.form['contentID']
+        print(request.form)
 
         #select content
         cur = conn.cursor()
-        contentID = cur.execute('SELECT id FROM Content WHERE content_name = %s', id)
-
-
-        #taggee is the username that the tagger picks
-        username_taggee = cur.execute('SELECT username FROM Person WHERE username = %s', username_tagger)
-        #timestamp = cur.execute('SELECT timest FROM Content')
-        status = False
-
 
         #Case 1: if user is self-tagging
-        if username_tagger == username_taggee:
-            status = True
-            query = cur.execute('INSERT INTO tag (id, username_tagger, username_tagger, status)\
-            VALUES(%s, %s, %s, %s, %s)' , (contentID, username_tagger, username_taggee, status))
+        if taggee == tagger:
+            status = 1
+            print(contentID, tagger, taggee, status)
+            query = cur.execute('INSERT INTO Tag (id, username_tagger, username_taggee, status)\
+            VALUES(%s, %s, %s, %s)' , (contentID, tagger, taggee, status))
 
             flash('You have tagged yourself in this content!')
-            return redirect(url_for('dashboard'))
-
         #Case 2: is user is tagging someone else
         else:
-            status = False
-            query = cur.execute('INSERT INTO tag (id, username_tagger, username_taggee, status)\
-            VALUES(%s, %s, %s, %s, %s)',(contentID, username_tagger, username_taggee, status))
+            status = 0
+            query = cur.execute('INSERT INTO Tag (id, username_tagger, username_taggee, status)\
+            VALUES(%s, %s, %s, %s)',(contentID, tagger, taggee, status))
 
-            flash ('You have tagged', username_taggee, 'in this content!')
-            return redirect(url_for('dashboard'))
-        
-        #If the content is not public to taggee, then 
-        #else:
-            #flash('Content item is not visible to this user')
-            #return redirect(url_for('dashboard'))
-
+            flash('You have tagged ' + taggee + ' in this content!')
         conn.commit()
         cur.close()
+        return redirect(url_for('dashboard'))
 
     else:
         flash('Timed out, please login again', 'danger')
         return redirect(url_for('login'))
 
-@app.route('/accepttag')
-def accepttag():
- if 'logged_in' in session:
-     username = session['username']
-     cur = conn.cursor   
+@app.route("/tags")
+def tags():
+    username = session['username']
+    cur = conn.cursor()
+    cur.execute('SELECT username_tagger, id FROM Tag WHERE username_taggee = %s AND status = 0', username)
+    pendingTags = cur.fetchall()
+    conn.commit()
+    cur.close()
+    return render_template("tags.html", pendingTags=pendingTags)
 
+@app.route('/manageTags', methods=['GET', 'POST'])
+def manageTags():
+    taggee = session['username']
+    tagger = request.form['tagger']
+    id = request.form['id']
+    approvalStatus = request.form['approval']
+    cur = conn.cursor()
+    
+    if approvalStatus == "accept":
+        cur.execute('UPDATE Tag SET status = 1 WHERE id = %s AND username_taggee = %s AND username_tagger = %s', (id, taggee, tagger))
+        flash('The tag has been approved')
+    else:
+        cur.execute('DELETE FROM Tag WHERE id = %s AND username_taggee = %s AND username_tagger = %s', (id, taggee, tagger))
+        flash('The tag has been deleted')
+
+    cur.execute('SELECT username_tagger, id FROM Tag WHERE username_taggee = %s AND status = 0', taggee)
+    pendingTags = cur.fetchall()
+
+    conn.commit()
+    cur.close()
+    return render_template("tags.html", pendingTags=pendingTags)
 
 @app.route('/creategroup')
 def creategroup():

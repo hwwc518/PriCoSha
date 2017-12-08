@@ -21,6 +21,7 @@
             <tr>
                 <th>Time</th>
                 <th>Post</th>
+                <th>Tag</th>
             </tr>
         </thead>
 
@@ -28,6 +29,13 @@
             <tr>
                 <td>{{line.timest}}</td>
                 <td>{{line.content_name}}</td>
+                <td>
+                    <form action="/tag" method="POST">
+                        <input type="hidden" name="contentID" value="{{line.id}}">
+                        <input type="text" name="taggee" placeholder="Username">
+                        <button type="submit">Tag</button>
+                    </form>
+                </td>
             </tr>
         {% endfor %}
     </table>
