@@ -9,14 +9,22 @@ import pymysql.cursors
 
 app = Flask(__name__)
 
+# hoyin and ashley
+# conn = pymysql.connect(host='localhost',
+#                        user='root',
+#                        password='root',
+#                        port=8889,
+#                        db='pricosha1',
+#                        charset='utf8mb4',
+#                        cursorclass=pymysql.cursors.DictCursor)
+
+# hui
 conn = pymysql.connect(host='localhost',
                        user='root',
-                       password='root',
-                       port=8889,
-                       db='pricosha1',
+                       password='password',
+                       db='Pricosha',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
-
 
 # timeout function
 @app.before_request
@@ -32,6 +40,8 @@ def index():
     # if not session.get('logged_in'):
     #     return render_template('login.html')
     # else:
+    if 'logged_in' in session:
+        return redirect(url_for('dashboard'))
     return render_template('home.html')
 
 class RegisterForm(Form):
