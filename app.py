@@ -1,6 +1,6 @@
 from flask import Flask, flash, app, request, session, render_template, url_for,\
 logging, redirect
-from flask_mysqldb import MySQL
+# from flask_mysqldb import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from functools import wraps
@@ -9,14 +9,22 @@ import pymysql.cursors
 
 app = Flask(__name__)
 
+# hoyin and ashley
+# conn = pymysql.connect(host='localhost',
+#                        user='root',
+#                        password='root',
+#                        port=8889,
+#                        db='pricosha1',
+#                        charset='utf8mb4',
+#                        cursorclass=pymysql.cursors.DictCursor)
+
+# hui
 conn = pymysql.connect(host='localhost',
                        user='root',
-                       password='root',
-                       port=8889,
+                       password='password',
                        db='Pricosha',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
-
 
 # timeout function
 @app.before_request
@@ -32,6 +40,8 @@ def index():
     # if not session.get('logged_in'):
     #     return render_template('login.html')
     # else:
+    if 'logged_in' in session:
+        return redirect(url_for('dashboard'))
     return render_template('home.html')
 
 class RegisterForm(Form):
@@ -153,7 +163,7 @@ def logout():
 def dashboard():
     username = session['username']
     cursor = conn.cursor()
-    query = 'SELECT timest, content_name FROM Content WHERE username = %s ORDER BY\
+    query = 'SELECT timest, content_name, id FROM Content WHERE username = %s ORDER BY\
     timest DESC'
     cursor.execute(query, (username))
     data = cursor.fetchall()
@@ -169,9 +179,9 @@ def send_friend_request():
     username_creator = request.form['username_creator']
     
     cur = conn.cursor()
-    query = "SELECT * FROM Member WHERE username = %s && group_name = %s"
-    cur.execute(query, (username, group_name))
-    data = cur.fetchone()
+    query = "SELECT * FROM Person WHERE username = %s && group_name = %s"
+    cursor.execute(query, (username, group_name))
+    data = cursor.fetchone()
     #error = None
     
     if (data):
@@ -180,7 +190,7 @@ def send_friend_request():
         return render_template('addfriend.html')
         #return render_template('addfriend.html', error = error)
     else:
-        query = "INSERT INTO Member VALUES(%s, %s, %s)"
+        query = "INSERT INTO Person VALUES(%s, %s, %s)"
         cur.execute(query, (username, group_name, username_creator))
         conn.commit()
         cur.close()
@@ -194,17 +204,90 @@ def addfriend():
 @app.route('/post', methods=['GET', 'POST'])
 def post():
     if 'logged_in' in session:
+        #username
         username = session['username']
         cursor = conn.cursor()
         content_name = request.form['content_name']
-        query = 'INSERT INTO Content (content_name, username) VALUES(%s, %s)'
-        cursor.execute(query, (content_name, username))
+        pub_status = True if request.form.get('public') else False
+
+        query = 'INSERT INTO Content (content_name, username, public) VALUES(%s, %s, %s)'
+        cursor.execute(query, (content_name, username, pub_status))
         conn.commit()
         cursor.close()
+
+
         return redirect(url_for('dashboard'))
     else:
         flash('Timed out, please login again', 'danger')
         return redirect(url_for('login'))
+
+#tag function
+@app.route('/tag', methods=['GET' , 'POST'])
+def tag():
+    if 'logged_in' in session:
+        #tagger is the user logged into the session
+        tagger = session['username']
+        taggee = request.form['taggee']
+        contentID = request.form['contentID']
+        print(request.form)
+
+        #select content
+        cur = conn.cursor()
+
+        #Case 1: if user is self-tagging
+        if taggee == tagger:
+            status = 1
+            print(contentID, tagger, taggee, status)
+            query = cur.execute('INSERT INTO Tag (id, username_tagger, username_taggee, status)\
+            VALUES(%s, %s, %s, %s)' , (contentID, tagger, taggee, status))
+
+            flash('You have tagged yourself in this content!')
+        #Case 2: is user is tagging someone else
+        else:
+            status = 0
+            query = cur.execute('INSERT INTO Tag (id, username_tagger, username_taggee, status)\
+            VALUES(%s, %s, %s, %s)',(contentID, tagger, taggee, status))
+
+            flash('You have tagged ' + taggee + ' in this content!')
+        conn.commit()
+        cur.close()
+        return redirect(url_for('dashboard'))
+
+    else:
+        flash('Timed out, please login again', 'danger')
+        return redirect(url_for('login'))
+
+@app.route("/tags")
+def tags():
+    username = session['username']
+    cur = conn.cursor()
+    cur.execute('SELECT username_tagger, id FROM Tag WHERE username_taggee = %s AND status = 0', username)
+    pendingTags = cur.fetchall()
+    conn.commit()
+    cur.close()
+    return render_template("tags.html", pendingTags=pendingTags)
+
+@app.route('/manageTags', methods=['GET', 'POST'])
+def manageTags():
+    taggee = session['username']
+    tagger = request.form['tagger']
+    id = request.form['id']
+    approvalStatus = request.form['approval']
+    cur = conn.cursor()
+    
+    if approvalStatus == "accept":
+        cur.execute('UPDATE Tag SET status = 1 WHERE id = %s AND username_taggee = %s AND username_tagger = %s', (id, taggee, tagger))
+        flash('The tag has been approved')
+    else:
+        cur.execute('DELETE FROM Tag WHERE id = %s AND username_taggee = %s AND username_tagger = %s', (id, taggee, tagger))
+        flash('The tag has been deleted')
+
+    cur.execute('SELECT username_tagger, id FROM Tag WHERE username_taggee = %s AND status = 0', taggee)
+    pendingTags = cur.fetchall()
+
+    conn.commit()
+    cur.close()
+    return render_template("tags.html", pendingTags=pendingTags)
 
 @app.route('/creategroup')
 def creategroup():
@@ -215,7 +298,8 @@ def creategroup():
 def groups(): 
     if 'logged_in' in session:
         # check for create group action
-
+        #if request.form['mems']:
+        cursor = conn.cursor()
         creator = session['username']
         group_name = request.form['group_name']
         description = request.form['description']
@@ -244,11 +328,9 @@ def groups():
             val = cursor.execute(query5, mem)
             print(val)
             if (val == 1):
-                print("inside if")
                 query6 = 'INSERT INTO Member (username, group_name, username_creator) VALUES(%s, %s, %s)'
                 cursor.execute(query6, (mem, group_name, creator))
             else:
-                print("inside else")
                 invalidMems.append(mem)
     
         conn.commit()
@@ -258,7 +340,6 @@ def groups():
             error = "Following friends could not be added: "
             for mem in invalidMems:
                 error = error + str(mem) + " "
-            
             flash(error)
         else:
             flash('The friend group has been successfully added!')

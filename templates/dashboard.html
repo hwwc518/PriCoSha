@@ -5,6 +5,7 @@
         <h1>Welcome {{username}}</h1> 
         <input type="text" class = "form-control" name = "content_name" placeholder="post" required/>
         </br></br>
+        <label><input type ="checkbox" name = "public" value ="public"/> Public </label>
         <input type="submit" class="btn btn-primary" value = Post />
     </form>
 
@@ -20,6 +21,7 @@
             <tr>
                 <th>Time</th>
                 <th>Post</th>
+                <th>Tag</th>
             </tr>
         </thead>
 
@@ -27,6 +29,13 @@
             <tr>
                 <td>{{line.timest}}</td>
                 <td>{{line.content_name}}</td>
+                <td>
+                    <form action="/tag" method="POST">
+                        <input type="hidden" name="contentID" value="{{line.id}}">
+                        <input type="text" name="taggee" placeholder="Username">
+                        <button type="submit">Tag</button>
+                    </form>
+                </td>
             </tr>
         {% endfor %}
     </table>
