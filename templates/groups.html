@@ -5,7 +5,8 @@
     <!-- <h1>Add Friend</h1> -->
 <!-- create groups    -->
     <h2>Create Group</h2>
-    <form action="/groups" method="POST">
+    <p>You can create a group with your friends! If you want to add a friend to existing group, please head over to Friends.</p>
+    <form action="/addgroups" method="POST">
         <label for="group_name">Group Name</label>
         <input type="text" class = "form-control" name = "group_name" id = "group_name" required/><br>
         
@@ -23,5 +24,16 @@
         <p><input type="submit" class="btn btn-primary" value="Create"></p>
         <!-- <script type="text/javascript" src="../js/scripts.js"></script> -->
     </form>
+    <br/>
+    <h2>Delete Group</h2>
+    <p>Beware! You will permanently delete a group!</p>
+    <form action="/deletegroups" method="POST">
+        <label for="group_name">Group Name</label>
+        <input type="text" class="form-control" name="group_name" id="group_name" required/><br/>
+        <br/>
+        
+        <p><input type="submit" class="btn btn-primary" value="Delete"></p>
+    </form>
+    <br/><br/>
 
 {% endblock %}
