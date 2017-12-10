@@ -375,9 +375,64 @@ def manageTags():
 def creategroup():
     return render_template('groups.html')
 
+@app.route('/deletegroups', methods=['GET', 'POST'])
+def delete_group():
+    if 'logged_in' in session:
+        # check for create group action
+        #if request.form['mems']:
+        cursor = conn.cursor()
+        username = session['username']
+        group_name = request.form['group_name']
+        cursor = conn.cursor()
+        
+        query1 = 'SELECT * FROM FriendGroup WHERE username = %s AND group_name = %s'
+        query2 = 'SELECT username FROM FriendGroup WHERE group_name = %s'
+        cursor.execute(query2, group_name)
+        data = cursor.fetchone()
+        #check if the group exists
+        if (cursor.execute(query1, (username, group_name)) == 0):
+            print("Inside if")
+            flash("The group doesn't exist!")
+            conn.commit()
+            return redirect(url_for('creategroup'))
+        #check if the user is the creator... only giving creator the permission to delete the group
+        elif (data["username"] != username):
+            print("Inside elif")
+            flash("You do not have the permission to delete this group!")
+            conn.commit()
+            return redirect(url_for('creategroup'))
+        
+        else:
+            print("Inside else")
+            query3 = 'SELECT * FROM Member WHERE group_name = %s'
+            cursor.execute(query3, group_name)
+            data2 = cursor.fetchall()
+            
+            #delete all members
+            for mem in data2:
+                mem_username = mem["username"]
+                query4 = 'DELETE from Member WHERE username = %s AND group_name = %s'
+                cursor.execute(query4, (mem_username, group_name))
+        
+            #delete member group
+            query5 = 'DELETE from FriendGroup WHERE group_name = %s AND username = %s'
+            cursor.execute(query5, (group_name, username))
+            
+            conn.commit()
+            cursor.close()
+            
+            flash("Your friend group was successfully deleted!")
+            return redirect(url_for('dashboard'))
+    
+    else:
+        flash('Timed out, please login again', 'danger')
+        #didn't work so replacing it temporarily
+        return redirect(url_for('login'))
+
+
 # Groups page - create and manage groups / friends
-@app.route('/groups', methods=['GET','POST'])
-def groups(): 
+@app.route('/addgroups', methods=['GET','POST'])
+def add_groups():
     if 'logged_in' in session:
         # check for create group action
         #if request.form['mems']:
