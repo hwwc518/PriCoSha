@@ -2,11 +2,12 @@
 
 {% block body %}
     <form action="/post" method="POST">
-        <h1>Welcome {{username}}</h1> 
+        <h1>Welcome, {{username}}</h1> 
         <input type="text" class = "form-control" name = "content_name" placeholder="post" required/>
-        </br></br>
-        <label><input type ="checkbox" name = "public" value ="public"/> Public </label>
+        </br>
+        <br />
         <input type="submit" class="btn btn-primary" value = Post />
+        <label><input type ="checkbox" name = "public" value ="public"/> Public </label>
     </form>
 
     <style type="text/css">

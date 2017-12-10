@@ -7,11 +7,16 @@
 </head>
 
 <body>
-    <h2>Add Friends!</h2>
+    <h2>Manage Friends!</h2>
+    <p>You an add or delete friends here!</p>
     <br />
-    <form action="/sendrequest" method="POST">
+    <form action="/sendrequests" method="POST">
         <label for="username">Friend's Username</label>
         <input type="text" class = "form-control" name = "username" placeholder="Your Friend's Username" required/> 
+        <br/>
+        <label for="task">Add or Delete?</label>
+        <p>Please enter "Add" or "Delete"</p>
+        <input type="text" class= "form-control" name = "task" placeholder="Are  you adding or deleting friends?" required/>
         <br/>
         <label for="group_name">Group Name</label>
         <input type="text" class = "form-control" name = "group_name" placeholder="Group Name" required/>
