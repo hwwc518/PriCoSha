@@ -134,8 +134,66 @@ def login():
         else:
             error = "Username not found" 
             return render_template('login.html', error=error)
+            cur.close()
 
     return render_template('login.html')
+
+# class changeForm(Form):
+#     passwordNew = PasswordField('newPass', [
+#             validators.DataRequired(),
+#             validators.EqualTo('confirmNew', message='Passwords do not match'),
+#             validators.Length(min=5, max=100)
+#         ])
+#     confirmNew = PasswordField('confirmNewPass')
+
+@app.route('/changePassword', methods=['POST','GET'])
+def changePassword():
+    # passChangeForm = changeForm(request.form)
+    # if request.method == 'POST' and passChangeForm.validate():
+        # Get form fields
+    if 'logged_in' in session:
+        if request.method=='POST':
+            # Create cursor
+            cur = conn.cursor()
+
+            for key in request.form:
+                print(key)
+
+            curPass = request.form["currentPass"]
+            password_cand = request.form["newPass"]
+            password_cand = sha256_crypt.encrypt(str(password_cand))
+
+            username = session['username']
+
+            # Get users from database
+            query = cur.execute('SELECT * FROM Person WHERE username = %s',\
+                    [username])
+
+            data = cur.fetchone()
+            password = data['password']
+
+            #Compare passwords
+            if sha256_crypt.verify(curPass, password):
+                # authorized to change pass
+                cur.execute("UPDATE Person SET password=%s WHERE username=%s",\
+                        (password_cand, username))
+                
+                # Commit to DB
+                conn.commit()
+
+                # Close Connection
+                cur.close()
+
+                flash("Password changed successfully", "success")
+                return redirect(url_for("dashboard"))
+
+            else:
+                error = "Incorrect password"
+                return render_template('changePassword.html', error=error)
+
+    flash("couldn't connect") 
+    return render_template('changePassword.html')
+
 
 # Check for if user logged in
 def is_logged_in(f):
@@ -327,7 +385,7 @@ def groups():
     
         conn.commit()
         cursor.close()
-        flash('The friend group has been successfully added!')
+        flash('The friend group has been successfully added!', 'success')
         return redirect(url_for('dashboard'))
 
 

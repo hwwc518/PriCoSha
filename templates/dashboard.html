@@ -3,6 +3,16 @@
 {% block body %}
     <form action="/post" method="POST">
         <h1>Welcome {{username}}</h1> 
+        <div class = "well">
+            <ul class="list-inline">
+                <li class="list-inline-item">
+                    <a href="/changePassword">Change Password</a>
+                </li>
+                <!-- <li class="list-inline-item"> -->
+                <!--     <a href="/dashboard">Dashboard</a> -->
+                <!-- </li> -->
+            </ul>
+        </div>
         <input type="text" class = "form-control" name = "content_name" placeholder="post" required/>
         </br></br>
         <label><input type ="checkbox" name = "public" value ="public"/> Public </label>
