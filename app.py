@@ -9,8 +9,8 @@ import pymysql.cursors
 
 app = Flask(__name__)
 
-# hoyin and ashley
-# conn = pymysql.connect(host='localhost',
+# hoyin
+#conn = pymysql.connect(host='localhost',
 #                        user='root',
 #                        password='root',
 #                        port=8889,
@@ -18,13 +18,22 @@ app = Flask(__name__)
 #                        charset='utf8mb4',
 #                        cursorclass=pymysql.cursors.DictCursor)
 
-# hui
+# ashley
 conn = pymysql.connect(host='localhost',
                        user='root',
-                       password='password',
+                       password='root',
+                       port=8889,
                        db='Pricosha',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
+
+# hui
+#conn = pymysql.connect(host='localhost',
+#                       user='root',
+#                       password='password',
+#                       db='Pricosha',
+#                       charset='utf8mb4',
+#                       cursorclass=pymysql.cursors.DictCursor)
 
 # timeout function
 @app.before_request
@@ -229,34 +238,50 @@ def dashboard():
     return render_template('dashboard.html', username=username, posts=data)
 
 
-@app.route('/sendrequest', methods=['GET','POST'])
-def send_friend_request():
+@app.route('/sendrequests', methods=['GET','POST'])
+def send_requests():
     
     username = request.form['username']
     group_name = request.form['group_name']
+    task = request.form['task']
     username_creator = request.form['username_creator']
     
     cur = conn.cursor()
-    query = "SELECT * FROM Person WHERE username = %s && group_name = %s"
-    cursor.execute(query, (username, group_name))
-    data = cursor.fetchone()
+    query = "SELECT * FROM Member WHERE username = %s && group_name = %s"
+    cur.execute(query, (username, group_name))
+    data = cur.fetchone()
     #error = None
     
-    if (data):
-        #error = "This friend is already in your friend group!"
-        flash('This friend is already in your friend group!')
-        return render_template('addfriend.html')
-        #return render_template('addfriend.html', error = error)
+    if (task == "add" or task == "Add"):
+        if (data):
+            #error = "This friend is already in your friend group!"
+            flash('This friend is already in your friend group!')
+            return render_template('addfriend.html')
+            #return render_template('addfriend.html', error = error)
+        else:
+            query1 = "INSERT INTO Member(username, group_name, username_creator) VALUES(%s, %s, %s)"
+            cur.execute(query1, (username, group_name, username_creator))
+            conn.commit()
+            cur.close()
+            flash('Your friend has been added to your friend group!')
+            return render_template('addfriend.html')
+    elif (task == "delete" or task == "Delete"):
+        if (data):
+            
+            query2 = "DELETE FROM Member WHERE username = %s && group_name = %s && username_creator = %s"
+            cur.execute(query2, (username, group_name, username_creator))
+            conn.commit()
+            cur.close()
+            flash('Your friend has been removed from your friend group!')
+            return render_template('addfriend.html')
+        else:
+            flash('This friend does not exist in your friend group!')
+            return render_template('addfriend.html')
     else:
-        query = "INSERT INTO Person VALUES(%s, %s, %s)"
-        cur.execute(query, (username, group_name, username_creator))
-        conn.commit()
-        cur.close()
-        flash('Your friend {{username}} has been added to your friend group!')
-        return render_template('addfriend.html')
+        flash("The task you entered is not valid! Please enter either add or delete.");
 
-@app.route('/addfriend', methods=['GET','POST'])
-def addfriend():
+@app.route('/managefriend', methods=['GET','POST'])
+def manage_friend():
     return render_template('addfriend.html')
 
 @app.route('/post', methods=['GET', 'POST'])
@@ -305,7 +330,6 @@ def tag():
             status = 0
             query = cur.execute('INSERT INTO Tag (id, username_tagger, username_taggee, status)\
             VALUES(%s, %s, %s, %s)',(contentID, tagger, taggee, status))
-
             flash('You have tagged ' + taggee + ' in this content!')
         conn.commit()
         cur.close()
@@ -403,29 +427,7 @@ def groups():
             flash('The friend group has been successfully added!')
 
         return redirect(url_for('dashboard'))
-
-
-# if there were invalid members, flash them and redirect
-## todo: NOT DONE##
-###################
-###################
-# if (invalidMems):
-#     flash('')
-
-#return render_template('home.html')
-            # todo: add add member function
-            ###############################
-            ###############################
             
-            
-#            else:
-#                flash('Timed out, please login again', 'danger')
-#                #didn't work so replacing it temporarily
-#                #return redirect(url_for('login'))
-#                return render_template('home.html')
-
-
-
     else:
         flash('Timed out, please login again', 'danger')
         #didn't work so replacing it temporarily
