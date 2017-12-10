@@ -364,59 +364,46 @@ def groups():
         mems = request.form['mems']
         cursor = conn.cursor()
         
-        query = 'INSERT INTO FriendGroup (group_name, username, description) VALUES(%s, %s, %s)'
-        cursor.execute(query, (group_name, creator, description))
+        query1 = 'SELECT COUNT(*) FROM Member WHERE username = %s AND group_name = %s'
+        if (cursor.execute(query1, (creator, group_name)) == 0):
+           query2 = 'INSERT INTO Member (username, group_name, username_creator)\VALUES(%s, %s, %s)'
+           query3 = 'INSERT INTO FriendGroup (group_name, username, description)\VALUES(%s, %s, %s)'
+           cursor.execute(query2, (creator, group_name, creator))
+           cursor.execute(query3, (group_name, creator, description))
+           conn.commit()
+        
+        query4 = 'INSERT INTO FriendGroup (group_name, username, description) VALUES(%s, %s, %s)'
+        cursor.execute(query4, (group_name, creator, description))
         
         listMems = mems.split(', ')
-        
-        #query2 = 'SELECT COUNT(*) FROM Member WHERE username = %s AND group_name = %s'
-
         
         #for all members in query
         invalidMems = []
         for mem in listMems:
             # verify if member is valid
-            queryx = 'SELECT COUNT(*) FROM Person WHERE username = %s'
-            if (cursor.execute(queryx, mem) == 1):
-                query = 'INSERT INTO Member (username, group_name, username_creator) VALUES(%s, %s, %s)'
-                cursor.execute(query, (mem, group_name, creator))
+            print(mem)
+            query5 = 'SELECT * FROM Person WHERE username = %s'
+            val = cursor.execute(query5, mem)
+            print(val)
+            if (val == 1):
+                query6 = 'INSERT INTO Member (username, group_name, username_creator) VALUES(%s, %s, %s)'
+                cursor.execute(query6, (mem, group_name, creator))
             else:
                 invalidMems.append(mem)
     
         conn.commit()
         cursor.close()
-        flash('The friend group has been successfully added!', 'success')
+        
+        if (len(invalidMems)!= 0):
+            error = "Following friends could not be added: "
+            for mem in invalidMems:
+                error = error + str(mem) + " "
+            flash(error)
+        else:
+            flash('The friend group has been successfully added!')
+
         return redirect(url_for('dashboard'))
 
-
-#       mems = request.form['mems']
-#       listMems = mems.split(', ')
-# add creator first if not already in
-#       query = 'SELECT COUNT(*) FROM Member WHERE username = %s AND group_name = %s'
-# check logic / not sure if this works
-#if (cursor.execute(query, (creator, group_name)) == 0):
-#   query = 'INSERT INTO Member (username, group_name, username_creator)\VALUES(%s, %s, %s)'
-#   query2 = 'INSERT INTO FriendGroup (group_name, username, description)\VALUES(%s, %s, %s)'
-#   cursor.execute(query, (creator, group_name, creator))
-#   cursor.execute(query2, (group_name, creator, description))
-#   conn.commit()
-
-# for all members in query
-#       invalidMems = []
-#       for mem in listMems:
-#	        # verify if member is valid
-#           queryx = 'SELECT COUNT(*) FROM Person WHERE username = %s'
-#           if (cursor.execute(queryx, mem) == 1):
-#               query = 'INSERT INTO Member (username, group_name, username_creator)\VALUES(%s, %s, %s)'
-#               query2 = 'INSERT INTO FriendGroup (group_name, username, description)\VALUES(%s, %s, %s)'
-#               cursor.execute(query, (mem, group_name, creator))
-#               cursor.execute(query2, (group_name, mem, description))
-#               conn.commit()
-#           else:
-#               invalidMems.append(mem)
-
-# close connection
-#   cursor.close()
 
 # if there were invalid members, flash them and redirect
 ## todo: NOT DONE##
