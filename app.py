@@ -19,21 +19,21 @@ app = Flask(__name__)
 #                        cursorclass=pymysql.cursors.DictCursor)
 
 # ashley
-# conn = pymysql.connect(host='localhost',
-#                        user='root',
-#                        password='root',
-#                        port=8889,
-#                        db='Pricosha',
-#                        charset='utf8mb4',
-#                        cursorclass=pymysql.cursors.DictCursor)
+conn = pymysql.connect(host='localhost',
+                        user='root',
+                        password='root',
+                        port=8889,
+                        db='Pricosha',
+                        charset='utf8mb4',
+                        cursorclass=pymysql.cursors.DictCursor)
 
 # hui
-conn = pymysql.connect(host='localhost',
-                       user='root',
-                       password='password',
-                       db='Pricosha',
-                       charset='utf8mb4',
-                       cursorclass=pymysql.cursors.DictCursor)
+#conn = pymysql.connect(host='localhost',
+#                       user='root',
+#                       password='password',
+#                       db='Pricosha',
+#                       charset='utf8mb4',
+#                       cursorclass=pymysql.cursors.DictCursor)
 
 # timeout function
 @app.before_request
@@ -258,11 +258,24 @@ def dashboard():
     username = session['username']
     cursor = conn.cursor()
     query = 'SELECT timest, content_name, id FROM Content WHERE username = %s ORDER BY\
-    timest DESC'
+    id DESC'
     cursor.execute(query, (username))
     data = cursor.fetchall()
+    print(data)
+    
+    query2= 'SELECT timest, comment_text, id, username FROM Comment WHERE username = %s ORDER BY id DESC'
+    cursor.execute(query2, (username))
+    comments = cursor.fetchall()
+    print(data)
+    
+    query3 = 'SELECT timest, username_taggee, id FROM Tag ORDER BY\
+    id DESC'
+    cursor.execute(query3,)
+    tags = cursor.fetchall()
     cursor.close()
-    return render_template('dashboard.html', username=username, posts=data)
+    print(data)
+    
+    return render_template('dashboard.html', username=username, posts=data, comments=comments, tags = tags)
 
 @app.route('/addfriends', methods=['GET','POST'])
 def add_friends():
@@ -381,6 +394,24 @@ def post():
         cursor.close()
 
         return redirect(url_for('dashboard'))
+    else:
+        flash('Timed out, please login again', 'danger')
+        return redirect(url_for('login'))
+
+@app.route('/comment', methods=['GET','POST'])
+def comment():
+    if 'logged_in' in session:
+        username = session['username']
+        commentID = request.form['commentID']
+        comment_text = request.form['comment']
+
+        cur = conn.cursor()
+        query2 = 'INSERT INTO Comment (id, username, comment_text) VALUES(%s, %s, %s)'
+        cur.execute(query2, (commentID, username, comment_text))
+        flash('You have successfully added comment to this content!', 'success')
+
+        return redirect(url_for('dashboard'))
+
     else:
         flash('Timed out, please login again', 'danger')
         return redirect(url_for('login'))
