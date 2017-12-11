@@ -264,48 +264,92 @@ def dashboard():
     cursor.close()
     return render_template('dashboard.html', username=username, posts=data)
 
+@app.route('/addfriends', methods=['GET','POST'])
+def add_friends():
 
-@app.route('/sendrequests', methods=['GET','POST'])
-def send_requests():
-    
     username = request.form['username']
+    first_name = session["addfriend_first_name"]
+    last_name = session["addfriend_last_name"]
+    group_name = session["addfriend_group_name"]
+    username_creator = session["addfriend_creator"]
+    
+    cur = conn.cursor()
+    
+    query2 = "SELECT * FROM Member WHERE username = %s && group_name = %s"
+    cur.execute(query2, (username, group_name))
+    data = cur.fetchone()
+    
+    if (data):
+        flash('This friend is already in your friend group!', "danger")
+        conn.commit()
+        cur.close()
+        return render_template('addfriend.html')
+    else:
+        query1 = "INSERT INTO Member(username, group_name, username_creator) VALUES(%s, %s, %s)"
+        cur.execute(query1, (username, group_name, username_creator))
+        conn.commit()
+        cur.close()
+        flash('Your friend has been added to your friend group!', "success")
+        return render_template('addfriend.html')
+
+@app.route('/addfriend', methods=['GET','POST'])
+def add_friend():
+    
+    first_name = request.form['first_name']
+    last_name = request.form['last_name']
     group_name = request.form['group_name']
-    task = request.form['task']
     username_creator = request.form['username_creator']
     
     cur = conn.cursor()
-    query = "SELECT * FROM Member WHERE username = %s && group_name = %s"
-    cur.execute(query, (username, group_name))
-    data = cur.fetchone()
-    #error = None
+    query1 = "SELECT COUNT(*) FROM Person WHERE first_name = %s && last_name = %s"
+    cur.execute(query1, (first_name, last_name))
+    num = cur.fetchone()
     
-    if (task == "add" or task == "Add"):
-        if (data):
-            #error = "This friend is already in your friend group!"
-            flash('This friend is already in your friend group!')
+    if (num["COUNT(*)"]== 0):
+        flash("This person does not exist! Tell them to create an account!", "danger")
+        return render_template('addfriend.html')
+    elif (num["COUNT(*)"] > 1):
+        session["addfriend_first_name"] = first_name
+        session["addfriend_last_name"] = last_name
+        session["addfriend_group_name"] = group_name
+        session["addfriend_creator"] = username_creator
+        return render_template('altaddfriend.html')
+    else:
+        query2 = "SELECT username FROM Person WHERE first_name=%s && last_name=%s"
+        cur.execute(query2, (first_name, last_name))
+        username2 = cur.fetchone()
+        
+        query3 = "SELECT COUNT(*) FROM Member WHERE username = %s && group_name = %s"
+        cur.execute(query3, (username2["username"], group_name))
+        data = cur.fetchone()
+        
+
+        if (data["COUNT(*)"]!=0):
+            flash('This friend is already in your friend group!', "danger")
+            conn.commit()
+            cur.close()
             return render_template('addfriend.html')
-            #return render_template('addfriend.html', error = error)
         else:
             query1 = "INSERT INTO Member(username, group_name, username_creator) VALUES(%s, %s, %s)"
-            cur.execute(query1, (username, group_name, username_creator))
+            cur.execute(query1, (username2["username"], group_name, username_creator))
             conn.commit()
             cur.close()
-            flash('Your friend has been added to your friend group!')
+            flash('Your friend has been added to your friend group!', "success")
             return render_template('addfriend.html')
-    elif (task == "delete" or task == "Delete"):
-        if (data):
-            
-            query2 = "DELETE FROM Member WHERE username = %s && group_name = %s && username_creator = %s"
-            cur.execute(query2, (username, group_name, username_creator))
-            conn.commit()
-            cur.close()
-            flash('Your friend has been removed from your friend group!')
-            return render_template('addfriend.html')
-        else:
-            flash('This friend does not exist in your friend group!')
-            return render_template('addfriend.html')
+
+@app.route('/deletefriend', methods=['GET','POST'])
+def delete_friend():
+    if (data):
+        
+        query2 = "DELETE FROM Member WHERE username = %s && group_name = %s && username_creator = %s"
+        cur.execute(query2, (username, group_name, username_creator))
+        conn.commit()
+        cur.close()
+        flash('Your friend has been removed from your friend group!', "success")
+        return render_template('addfriend.html')
     else:
-        flash("The task you entered is not valid! Please enter either add or delete.");
+        flash('This friend does not exist in your friend group!', "danger")
+        return render_template('addfriend.html')
 
 @app.route('/managefriend', methods=['GET','POST'])
 def manage_friend():
@@ -429,13 +473,13 @@ def delete_group():
         #check if the group exists
         if (cursor.execute(query1, (username, group_name)) == 0):
             print("Inside if")
-            flash("The group doesn't exist!")
+            flash("The group doesn't exist!", "danger")
             conn.commit()
             return redirect(url_for('creategroup'))
         #check if the user is the creator... only giving creator the permission to delete the group
         elif (data["username"] != username):
             print("Inside elif")
-            flash("You do not have the permission to delete this group!")
+            flash("You do not have the permission to delete this group!", "danger")
             conn.commit()
             return redirect(url_for('creategroup'))
         
@@ -458,7 +502,7 @@ def delete_group():
             conn.commit()
             cursor.close()
             
-            flash("Your friend group was successfully deleted!")
+            flash("Your friend group was successfully deleted!", "success")
             return redirect(url_for('dashboard'))
     
     else:
@@ -514,9 +558,9 @@ def add_groups():
             error = "Following friends could not be added: "
             for mem in invalidMems:
                 error = error + str(mem) + " "
-            flash(error)
+            flash(error, "danger")
         else:
-            flash('The friend group has been successfully added!')
+            flash('The friend group has been successfully added!', "success")
 
         return redirect(url_for('dashboard'))
             
