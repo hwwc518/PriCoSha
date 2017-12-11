@@ -237,6 +237,35 @@ def dashboard():
     cursor.close()
     return render_template('dashboard.html', username=username, posts=data)
 
+@app.route('/addfriends', methods=['GET','POST'])
+def add_friends():
+
+    username = request.form['username']
+    first_name = session.get('first_name', None)
+    last_name = session.get('last_name', None)
+    group_name = session.get('group_name', None)
+    username_creator = session.get('username_creator', None)
+    
+    cur = conn.cursor()
+    
+    query2 = "SELECT * FROM Member WHERE username = %s && group_name = %s"
+    cur.execute(query2, (username, group_name))
+    data = cur.fetchone()
+    
+    if (data):
+        flash('This friend is already in your friend group!')
+        conn.commit()
+        cur.close()
+        return redirect(url_for('addfriend'))
+    else:
+        query1 = "INSERT INTO Member(username, group_name, username_creator) VALUES(%s, %s, %s)"
+        cur.execute(query1, (username, group_name, username_creator))
+        conn.commit()
+        cur.close()
+        flash('Your friend has been added to your friend group!')
+        return redirect(url_for('addfriend'))
+
+    return redirect(url_for('addfriend'))
 
 @app.route('/addfriend', methods=['GET','POST'])
 def add_friend():
@@ -248,23 +277,33 @@ def add_friend():
     
     cur = conn.cursor()
     query1 = "SELECT COUNT(*) FROM Person WHERE first_name = %s && last_name = %s"
-    if (cur.execute(query1, (username, group_name)) > 1):
-        flash("There are more than one person with the entered name.")
-        return render_template('altaddfriend.html')
+    if (cur.execute(query1, (first_name, last_name)) == 0):
+        flash("This person does not exist! Tell them to create an account!")
+        return redirect(url_for('addfriend'))
+    elif (cur.execute(query1, (first_name, last_name)) > 1):
+        flash("There are more than one person with the entered name!")
+        session["addfriend_first_name"] = first_name
+        session["addfriend_last_name"] = last_name
+        session["addfriend_group_name"] = group_name
+        session["addfriend_creator"] = username_creator
+        return redirect(url_for('altaddfriend.html'))
     else:
-
-        query2 = "SELECT * FROM Member WHERE username = %s && group_name = %s"
-        cur.execute(query2, (username, group_name))
+        query2 = "SELECT username FROM Person WHERE first_name=%s && last_name=%s"
+        cur.execute(query2, (first_name, last_name))
+        username2 = cur.fetchone()
+        
+        query3 = "SELECT COUNT(*) FROM Member WHERE username = %s && group_name = %s"
+        cur.execute(query3, (username2["username"], group_name))
         data = cur.fetchone()
 
         if (data):
-    #error = "This friend is already in your friend group!"
             flash('This friend is already in your friend group!')
+            conn.commit()
+            cur.close()
             return render_template('addfriend.html')
-    #return render_template('addfriend.html', error = error)
         else:
             query1 = "INSERT INTO Member(username, group_name, username_creator) VALUES(%s, %s, %s)"
-            cur.execute(query1, (username, group_name, username_creator))
+            cur.execute(query1, (username2["username"], group_name, username_creator))
             conn.commit()
             cur.close()
             flash('Your friend has been added to your friend group!')

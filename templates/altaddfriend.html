@@ -9,21 +9,11 @@
 <body>
     <h2>Add Friend</h2> 
     <br />
-    <form action="/addfriend" method="POST">
-        <label for="first_name">Friend's First Name</label>
-        <input type="text" class = "form-control" name = "first_name" placeholder="Your Friend's First Name" required/><br/>
-        
-        <label for="last_name">Friend's Last Name</label>
-        <input type="text" class = "form-control" name = "last_name" placeholder="Your Friend's Last Name" required/> <br/>
-
-        <label for="group_name">Group Name</label>
-        <input type="text" class = "form-control" name = "group_name" placeholder="Group Name" required/>
+    <form action="/addfriends" method="POST">
+        <label for="username">Please enter your friend's username:</label>
+        <input type="text" class = "form-control" name = "username" placeholder="Your Friend's Username" required/> 
         <br/>
-        <label for="username_creator">Group's Creator's Username</label>
-        <input type="text" class = "form-control" name = "username_creator" placeholder="Your Username" required/>
-        <br/>
-        <br/>
-        <input type="submit" class="btn btn-primary" value=Add />
+        <input type="submit" class="btn btn-primary" value=Continue />
     </form>
     <br/>
     <h2>Delete Friend</h2>
@@ -40,7 +30,6 @@
         <br/>
         <input type="submit" class="btn btn-primary" value=Delete />
     </form>
-    <br/><br/>
 </body>
 
 </html>
