@@ -43,12 +43,14 @@
         <!--     </div>-->
     </form>
 
+
     <style type="text/css">
         table, th, td{
             margin-top: 1cm;
         }
     </style>
 
+    <h2>Posts You Created</h2>
     <table class = "table">
         <h2> Posts you made </h2>
 
@@ -61,61 +63,97 @@
                 <th>Comment</th>
             </tr>
         </thead>
-
         {% for line in posts %}
             <tr>
                 <td>{{line.timest}}</td>
                 <td>{{line.content_name}}</td>
                 <td>
-                    <p>{{line.tags}}</p>
-                    <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal1">Add</button>
-                    <div id="myModal1" class="modal fade" role="dialog">
-                        <div class="modal-dialog">
-
-                        <!-- Modal content-->
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                    <h4 class="modal-title">Tag</h4>
-                                </div>
-                                <div class="modal-body">
-                                    <form action="/tag" method="POST">
-                                        <input type="hidden" name="contentID" value="{{line.id}}">
-                                        <input type="text" name="taggee" placeholder="Username">
-                                        <button type="submit">Tag</button>
-                                    </form>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                                </div>
-                            </div>
-                        </div>
+<!--                    <input type="button" onclick="showTags();" value="Click" />-->
+                    <div id="showtags">
+                        {% for tag in tags %}
+                            {% if line.id == tag.id %}
+                                <p>{{tag.first_name}} {{tag.last_name}} ({{tag.username_taggee}})</p>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    <br/>
+                    
+                    <form action="/tag" method="POST">
+                        <input type="hidden" name="contentID" value="{{line.id}}">
+                        <input type="text" name="taggee" placeholder="Username">
+                        <button type="submit">Tag</button>
+                    </form>
                 </td>
                 <td>
-                    <p>{{line.comments}}</p>
-                    <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal2">Add</button>
-                    <div id="myModal2" class="modal fade" role="dialog">
-                        <div class="modal-dialog">
-
-                        <!-- Modal content-->
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                    <h4 class="modal-title">Comment</h4>
-                                </div>
-                                <div class="modal-body">
-                                    <form action="/comment" method="POST">
-                                        <input type="hidden" name="commentID" value="{{line.id}}">
-                                        <input type="text" name="comment" placeholder="Comment">
-                                        <button type="submit">Comment</button>
-                                    </form>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                                </div>
-                            </div>
-                        </div>
+<!--                    <input type="button" onclick="showComments();" value="Click" />-->
+                    <div id="showcomments">
+                        {% for com in comments %} 
+                            {% if line.id == com.id %}
+                                <p>{{com.timest}}: {{com.username}}: {{com.comment_text}}</p>
+                            {% endif %}
+                        {% endfor %}
                     </div>
+                    
+                    <form action="/comment" method="POST">
+                        <input type="hidden" name="commentID" value="{{line.id}}">
+                        <input type="text" name="comment" placeholder="Comment">
+                        <button type="submit">Add</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <br />
+    <h2>Posts You Are Tagged In</h2>
+    <table class = "table">
+        <!--Table head-->
+        <thead class="blue-grey lighten-4">
+            <tr>
+                <th>Time</th>
+                <th>Post</th>
+                <th>Tag</th>
+                <th>Comment</th>
+            </tr>
+        </thead>
+        {% for line in taggedposts %}
+            <tr>
+                <td>{{line.timest}}</td>
+                <td>{{line.content_name}}</td>
+                <td>
+<!--                    <input type="button" onclick="showTags();" value="Click" />-->
+                    <div id="showtags">
+                        {% for tag in tags %}
+                            {% if line.id == tag.id %}
+                                <p>{{tag.first_name}} {{tag.last_name}} ({{tag.username_taggee}})</p>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    <br/>
+                    
+                    <form action="/tag" method="POST">
+                        <input type="hidden" name="contentID" value="{{line.id}}">
+                        <input type="text" name="taggee" placeholder="Username">
+                        <button type="submit">Tag</button>
+                    </form>
+                </td>
+                <td>
+<!--                    <input type="button" onclick="showComments();" value="Click" />-->
+                    <div id="showcomments">
+                        {% for com in comments %} 
+                            {% if line.id == com.id %}
+                                <p>{{com.timest}}: {{com.username}}: {{com.comment_text}}</p>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    <form action="/comment" method="POST">
+                        <input type="hidden" name="commentID" value="{{line.id}}">
+                        <input type="text" name="comment" placeholder="Comment">
+                        <button type="submit">Add</button>
+                    </form>
                 </td>
             </tr>
         {% endfor %}
