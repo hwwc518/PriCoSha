@@ -19,21 +19,21 @@ app = Flask(__name__)
 #                        cursorclass=pymysql.cursors.DictCursor)
 
 # ashley
+# conn = pymysql.connect(host='localhost',
+#                        user='root',
+#                        password='root',
+#                        port=8889,
+#                        db='Pricosha',
+#                        charset='utf8mb4',
+#                        cursorclass=pymysql.cursors.DictCursor)
+
+# hui
 conn = pymysql.connect(host='localhost',
                        user='root',
-                       password='root',
-                       port=8889,
+                       password='password',
                        db='Pricosha',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
-
-# hui
-#conn = pymysql.connect(host='localhost',
-#                       user='root',
-#                       password='password',
-#                       db='Pricosha',
-#                       charset='utf8mb4',
-#                       cursorclass=pymysql.cursors.DictCursor)
 
 # timeout function
 @app.before_request
@@ -147,26 +147,12 @@ def login():
 
     return render_template('login.html')
 
-# class changeForm(Form):
-#     passwordNew = PasswordField('newPass', [
-#             validators.DataRequired(),
-#             validators.EqualTo('confirmNew', message='Passwords do not match'),
-#             validators.Length(min=5, max=100)
-#         ])
-#     confirmNew = PasswordField('confirmNewPass')
-
 @app.route('/changePassword', methods=['POST','GET'])
 def changePassword():
-    # passChangeForm = changeForm(request.form)
-    # if request.method == 'POST' and passChangeForm.validate():
-        # Get form fields
     if 'logged_in' in session:
         if request.method=='POST':
             # Create cursor
             cur = conn.cursor()
-
-            for key in request.form:
-                print(key)
 
             curPass = request.form["currentPass"]
             password_cand = request.form["newPass"]
@@ -193,16 +179,57 @@ def changePassword():
                 # Close Connection
                 cur.close()
 
+                session.clear();
                 flash("Password changed successfully", "success")
-                return redirect(url_for("dashboard"))
+                return redirect(url_for("login"))
 
             else:
                 error = "Incorrect password"
                 return render_template('changePassword.html', error=error)
 
-    flash("couldn't connect") 
     return render_template('changePassword.html')
 
+
+@app.route('/changeUsername', methods=['POST','GET'])
+def changeUsername():
+    if 'logged_in' in session:
+        if request.method=='POST':
+            # Create cursor
+            cur = conn.cursor()
+
+            curPass = request.form["currPass"]
+            username_cand = request.form["newUsername"]
+
+            username = session['username']
+
+            # Get users from database
+            query = cur.execute('SELECT * FROM Person WHERE username = %s',\
+                    [username])
+
+            data = cur.fetchone()
+            password = data['password']
+
+            #Compare passwords
+            if sha256_crypt.verify(curPass, password):
+                # authorized to change pass
+                cur.execute("UPDATE Person SET username=%s WHERE username=%s",\
+                        (username_cand, username))
+                
+                # Commit to DB
+                conn.commit()
+
+                # Close Connection
+                cur.close()
+
+                session.clear();
+                flash("Username changed successfully, please login again", "success")
+                return redirect(url_for("login"))
+
+            else:
+                error = "Incorrect password"
+                return render_template('changeUsername.html', error=error)
+
+    return render_template('changeUsername.html')
 
 # Check for if user logged in
 def is_logged_in(f):
@@ -317,23 +344,33 @@ def tag():
         #select content
         cur = conn.cursor()
 
-        #Case 1: if user is self-tagging
-        if taggee == tagger:
-            status = 1
-            print(contentID, tagger, taggee, status)
-            query = cur.execute('INSERT INTO Tag (id, username_tagger, username_taggee, status)\
-            VALUES(%s, %s, %s, %s)' , (contentID, tagger, taggee, status))
+        # check if user is valid
+        # Get users from database
+        query = cur.execute('SELECT * FROM Person WHERE username = %s',\
+                [taggee])
 
-            flash('You have tagged yourself in this content!')
-        #Case 2: is user is tagging someone else
+        if (query > 0): 
+            #Case 1: if user is self-tagging
+            if taggee == tagger:
+                status = 1
+                print(contentID, tagger, taggee, status)
+                query = cur.execute('INSERT INTO Tag (id, username_tagger, username_taggee, status)\
+                VALUES(%s, %s, %s, %s)' , (contentID, tagger, taggee, status))
+
+                flash('You have tagged yourself in this content!', 'success')
+            #Case 2: is user is tagging someone else
+            else:
+                status = 0
+                query = cur.execute('INSERT INTO Tag (id, username_tagger, username_taggee, status)\
+                VALUES(%s, %s, %s, %s)',(contentID, tagger, taggee, status))
+                flash('You have tagged ' + taggee + ' in this content!')
+            conn.commit()
+            cur.close()
+            return redirect(url_for('dashboard'))
         else:
-            status = 0
-            query = cur.execute('INSERT INTO Tag (id, username_tagger, username_taggee, status)\
-            VALUES(%s, %s, %s, %s)',(contentID, tagger, taggee, status))
-            flash('You have tagged ' + taggee + ' in this content!')
-        conn.commit()
-        cur.close()
-        return redirect(url_for('dashboard'))
+            flash("User does not exist", "danger")
+            cur.close()
+            return redirect(url_for("dashboard"))
 
     else:
         flash('Timed out, please login again', 'danger')
@@ -359,10 +396,10 @@ def manageTags():
     
     if approvalStatus == "accept":
         cur.execute('UPDATE Tag SET status = 1 WHERE id = %s AND username_taggee = %s AND username_tagger = %s', (id, taggee, tagger))
-        flash('The tag has been approved')
+        flash('The tag has been approved', 'success')
     else:
         cur.execute('DELETE FROM Tag WHERE id = %s AND username_taggee = %s AND username_tagger = %s', (id, taggee, tagger))
-        flash('The tag has been deleted')
+        flash('The tag has been deleted', 'success')
 
     cur.execute('SELECT username_tagger, id FROM Tag WHERE username_taggee = %s AND status = 0', taggee)
     pendingTags = cur.fetchall()
