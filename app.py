@@ -266,7 +266,6 @@ def dashboard():
 
 @app.route('/addfriends', methods=['GET','POST'])
 def add_friends():
-
     username = request.form['username']
     first_name = session["addfriend_first_name"]
     last_name = session["addfriend_last_name"]
@@ -294,7 +293,6 @@ def add_friends():
 
 @app.route('/addfriend', methods=['GET','POST'])
 def add_friend():
-    
     first_name = request.form['first_name']
     last_name = request.form['last_name']
     group_name = request.form['group_name']
@@ -339,8 +337,7 @@ def add_friend():
 
 @app.route('/deletefriend', methods=['GET','POST'])
 def delete_friend():
-    if (data):
-        
+    if (data):        
         query2 = "DELETE FROM Member WHERE username = %s && group_name = %s && username_creator = %s"
         cur.execute(query2, (username, group_name, username_creator))
         conn.commit()
@@ -362,13 +359,26 @@ def post():
         username = session['username']
         cursor = conn.cursor()
         content_name = request.form['content_name']
-        pub_status = True if request.form.get('public') else False
+        p_status = False if request.form.get('p_status') else True
 
         query = 'INSERT INTO Content (content_name, username, public) VALUES(%s, %s, %s)'
-        cursor.execute(query, (content_name, username, pub_status))
+        cursor.execute(query, (content_name, username, p_status))
+
+        maxValQuery = 'SELECT MAX(id) FROM Content'
+        cursor.execute(maxValQuery)
+        maxVal = cursor.fetchone()
+        maxVal = maxVal['MAX(id)']
+
+	if (p_status == False):
+		groupNames = request.form['groupNames']
+		listOfGroupNames = groupNames.split(',')
+		cursor = conn.cursor()
+		for group in listOfGroupNames:
+			query = 'INSERT INTO Share (id, group_name, username) VALUES (%s, %s, %s)'
+			cursor.execute(query, (maxVal, group, username))
+
         conn.commit()
         cursor.close()
-
 
         return redirect(url_for('dashboard'))
     else:
@@ -422,35 +432,44 @@ def tag():
 
 @app.route("/tags")
 def tags():
-    username = session['username']
-    cur = conn.cursor()
-    cur.execute('SELECT username_tagger, id FROM Tag WHERE username_taggee = %s AND status = 0', username)
-    pendingTags = cur.fetchall()
-    conn.commit()
-    cur.close()
-    return render_template("tags.html", pendingTags=pendingTags)
+    if 'logged_in' in session:
+        username = session['username']
+        cur = conn.cursor()
+        cur.execute('SELECT username_tagger, id FROM Tag WHERE username_taggee = %s AND status = 0', username)
+        pendingTags = cur.fetchall()
+        conn.commit()
+        cur.close()
+        return render_template("tags.html", pendingTags=pendingTags)
+    else:
+        flash('Timed out, please login again', 'danger')
+        return redirect(url_for('login'))
 
 @app.route('/manageTags', methods=['GET', 'POST'])
 def manageTags():
-    taggee = session['username']
-    tagger = request.form['tagger']
-    id = request.form['id']
-    approvalStatus = request.form['approval']
-    cur = conn.cursor()
-    
-    if approvalStatus == "accept":
-        cur.execute('UPDATE Tag SET status = 1 WHERE id = %s AND username_taggee = %s AND username_tagger = %s', (id, taggee, tagger))
-        flash('The tag has been approved', 'success')
+    if 'logged_in' in session:
+        taggee = session['username']
+        tagger = request.form['tagger']
+        id = request.form['id']
+        approvalStatus = request.form['approval']
+        cur = conn.cursor()
+        
+        if approvalStatus == "accept":
+            cur.execute('UPDATE Tag SET status = 1 WHERE id = %s AND username_taggee = %s AND username_tagger = %s', (id, taggee, tagger))
+            flash('The tag has been approved', 'success')
+        else:
+            cur.execute('DELETE FROM Tag WHERE id = %s AND username_taggee = %s AND username_tagger = %s', (id, taggee, tagger))
+            flash('The tag has been deleted', 'success')
+
+        cur.execute('SELECT username_tagger, id FROM Tag WHERE username_taggee = %s AND status = 0', taggee)
+        pendingTags = cur.fetchall()
+
+        conn.commit()
+        cur.close()
+        return render_template("tags.html", pendingTags=pendingTags)
     else:
-        cur.execute('DELETE FROM Tag WHERE id = %s AND username_taggee = %s AND username_tagger = %s', (id, taggee, tagger))
-        flash('The tag has been deleted', 'success')
+        flash('Timed out, please login again', 'danger')
+        return redirect(url_for('login'))
 
-    cur.execute('SELECT username_tagger, id FROM Tag WHERE username_taggee = %s AND status = 0', taggee)
-    pendingTags = cur.fetchall()
-
-    conn.commit()
-    cur.close()
-    return render_template("tags.html", pendingTags=pendingTags)
 
 @app.route('/creategroup')
 def creategroup():
@@ -507,7 +526,6 @@ def delete_group():
     
     else:
         flash('Timed out, please login again', 'danger')
-        #didn't work so replacing it temporarily
         return redirect(url_for('login'))
 
 
@@ -566,7 +584,6 @@ def add_groups():
             
     else:
         flash('Timed out, please login again', 'danger')
-        #didn't work so replacing it temporarily
         return redirect(url_for('login'))
 
 
