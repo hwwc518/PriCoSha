@@ -5,6 +5,33 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <!--        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>-->
+        
+        <script type="text/javascript"> 
+            function showComments(){
+                var x = document.getElementById("showcomments");
+                if (x.style.display === "none") {
+                    x.style.display = "block";
+                } else {
+                    x.style.display = "none";
+                }
+            }
+            function showTags(){
+                var x = document.getElementById("showtags");
+                if (x.style.display === "none") {
+                    x.style.display = "block";
+                } else {
+                    x.style.display = "none";
+                }    
+            }
+        </script>
+        <style>
+            showtags {
+                display: block;
+            }
+            showcomments {
+                display: block;
+            }
+        </style>
     </head>
     <body>
         {% include 'includes/_navbar.html'%}

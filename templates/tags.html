@@ -1,23 +1,40 @@
 <html>
-    <head></head>
-    <body>
-    {% extends 'home.html' %} {% block body %}
-        <h2> Manage Tags </h2>
-        <ul>
-        {% for pendingTag in pendingTags %}
-        <li>{{ pendingTag.username_tagger }} tagged you in content {{ pendingTag.id }}
-                <form action = "/manageTags" method = "POST"> 
-                    <input type="hidden" name="tagger" value = "{{ pendingTag.username_tagger }}">
-                    <input type="hidden" name="id" value = "{{ pendingTag.id }}">
-                    <select name="approval">
-                            <option value="accept">Accept</option>
-                            <option value="decline">Decline</option>
-                    </select>
-                        <input type="submit" value = "Submit">
-                </form>
-        </li>
-        {% endfor %}
-    </ul>
-        {% endblock %}
-    </body>
-</html>
+        <head></head>
+        <body>
+        {% extends 'home.html' %} {% block body %}
+            <h2> Manage Tags </h2>
+            <table class = "table">
+            <thead class="blue-grey lighten-4">
+                    <tr>
+                        <th>Users who tagged you</th>
+                    </tr>
+                </thead>
+    
+            <td>
+            {% for pendingTag in pendingTags %}
+                <ul>
+                {{ pendingTag.username_tagger }} tagged you in a content; content ID = {{ pendingTag.id }}
+    
+                    <form action = "/manageTags" method = "POST"> 
+                        <input type="hidden" name="tagger" value = "{{ pendingTag.username_tagger }}">
+                        <input type="hidden" name="id" value = "{{ pendingTag.id }}">
+                        <select name="approval">
+                                <option value="accept">Accept</option>
+                                <option value="decline">Decline</option>
+                        </select>
+                            <input type="submit" value = "Submit">
+                    </form>
+                    <li> {{pendingTag.content_name}} </li>
+                </ul>
+                    <h2>
+    
+                    </h2>
+      
+    
+            {% endfor %}
+            </td>
+    
+    
+            {% endblock %}
+        </body>
+    </html>

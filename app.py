@@ -261,21 +261,27 @@ def dashboard():
     id DESC'
     cursor.execute(query, (username))
     data = cursor.fetchall()
-    print(data)
     
     query2= 'SELECT timest, comment_text, id, username FROM Comment WHERE username = %s ORDER BY id DESC'
     cursor.execute(query2, (username))
     comments = cursor.fetchall()
-    print(data)
+
     
-    query3 = 'SELECT timest, username_taggee, id FROM Tag ORDER BY\
-    id DESC'
+    query3 = 'SELECT Tag.timest, Tag.username_taggee, Tag.id, Person.first_name, Person.last_name FROM Tag NATURAL JOIN Person WHERE Tag.username_taggee = Person.username ORDER BY id DESC'
     cursor.execute(query3,)
     tags = cursor.fetchall()
-    cursor.close()
-    print(data)
     
-    return render_template('dashboard.html', username=username, posts=data, comments=comments, tags = tags)
+    #user can see all the posts that they made
+    tagged_query = 'SELECT DISTINCT content.timest, content_name, content.id \
+    FROM Content JOIN Tag \
+    ON Content.id = Tag.id \
+    WHERE (username_taggee = %s) AND (status = 1) \
+    ORDER BY  timest DESC'
+    cursor.execute(tagged_query,(username))
+    data2 = cursor.fetchall()
+    cursor.close()
+    
+    return render_template('dashboard.html', username=username, posts=data, comments=comments, tags = tags, taggedposts = data2)
 
 @app.route('/addfriends', methods=['GET','POST'])
 def add_friends():
@@ -455,7 +461,7 @@ def tag():
 def tags():
     username = session['username']
     cur = conn.cursor()
-    cur.execute('SELECT username_tagger, id FROM Tag WHERE username_taggee = %s AND status = 0', username)
+    cur.execute('SELECT username_tagger, Content.id, content_name FROM Tag JOIN Content ON Content.id = Tag.id WHERE username_taggee = %s AND status = 0', username)
     pendingTags = cur.fetchall()
     conn.commit()
     cur.close()
