@@ -9,14 +9,14 @@ import pymysql.cursors
 
 app = Flask(__name__)
 
-# hoyin
-#conn = pymysql.connect(host='localhost',
-#                        user='root',
-#                        password='root',
-#                        port=8889,
-#                        db='pricosha1',
-#                        charset='utf8mb4',
-#                        cursorclass=pymysql.cursors.DictCursor)
+#hoyin
+conn = pymysql.connect(host='localhost',
+                       user='root',
+                       password='root',
+                       port=8889,
+                       db='pricosha01',
+                       charset='utf8mb4',
+                       cursorclass=pymysql.cursors.DictCursor)
 
 # ashley
 # conn = pymysql.connect(host='localhost',
@@ -27,13 +27,22 @@ app = Flask(__name__)
 #                         charset='utf8mb4',
 #                         cursorclass=pymysql.cursors.DictCursor)
 
+# ashley
+#conn = pymysql.connect(host='localhost',
+#                        user='root',
+#                        password='root',
+#                        port=8889,
+#                        db='Pricosha',
+#                        charset='utf8mb4',
+#                        cursorclass=pymysql.cursors.DictCursor)
+
 # hui
-conn = pymysql.connect(host='localhost',
-                       user='root',
-                       password='password',
-                       db='Pricosha',
-                       charset='utf8mb4',
-                       cursorclass=pymysql.cursors.DictCursor)
+#conn = pymysql.connect(host='localhost',
+#                       user='root',
+                    #    password='password',
+                    #    db='Pricosha',
+                    #    charset='utf8mb4',
+                    #    cursorclass=pymysql.cursors.DictCursor)
 
 # timeout function
 @app.before_request
@@ -221,7 +230,7 @@ def changeUsername():
                 # Close Connection
                 cur.close()
 
-                session.clear();
+                session.clear()
                 flash("Username changed successfully, please login again", "success")
                 return redirect(url_for("login"))
 
@@ -271,8 +280,9 @@ def dashboard():
     tags = cursor.fetchall()
     # cursor.close()
     
-    query4 = 'SELECT group_name FROM FriendGroup'
-    cursor.execute(query4,)
+    #only the owner can share
+    query4 = 'SELECT group_name FROM FriendGroup WHERE username = %s'
+    cursor.execute(query4,(username))
     groups = cursor.fetchall()
     cursor.close()
 
@@ -348,12 +358,14 @@ def add_friend():
     if (num["COUNT(*)"]== 0):
         flash("This person does not exist! Tell them to create an account!", "danger")
         return render_template('addfriend.html')
+
     elif (num["COUNT(*)"] > 1):
         session["addfriend_first_name"] = first_name
         session["addfriend_last_name"] = last_name
         session["addfriend_group_name"] = group_name
         session["addfriend_creator"] = username_creator
         return render_template('altaddfriend.html')
+
     else:
         query2 = "SELECT username FROM Person WHERE first_name=%s && last_name=%s"
         cur.execute(query2, (first_name, last_name))
@@ -410,22 +422,56 @@ def post():
         cursor.execute(maxValQuery)
         maxVal = cursor.fetchone()
         maxVal = maxVal['MAX(id)']
-
-	if (p_status == False):
-		groupNames = request.form['groupNames']
-		listOfGroupNames = groupNames.split(',')
-		cursor = conn.cursor()
-		for group in listOfGroupNames:
-			query = 'INSERT INTO Share (id, group_name, username) VALUES (%s, %s, %s)'
-			cursor.execute(query, (maxVal, group, username))
-
         conn.commit()
         cursor.close()
-
+        flash('You have successfully posted!', 'success')
         return redirect(url_for('dashboard'))
+
+    elif p_status == False:
+        groupNames = request.form['groupNames']
+        listOfGroupNames = groupNames.split(',')
+        cursor = conn.cursor()
+        for group in listOfGroupNames:
+            query = 'INSERT INTO Share (id, group_name, username) VALUES (%s, %s, %s)'
+            cursor.execute(query, (maxVal, group, username))
+        conn.commit()
+        cursor.close()
+        return redirect(url_for('dashboard'))
+
     else:
         flash('Timed out, please login again', 'danger')
         return redirect(url_for('login'))
+
+@app.route('/sharepost', methods=['GET', 'POST'])
+def sharepost():
+    if 'logged_in' in session:
+        username = session['username']
+        contentID = request.form['contentID']
+        group_name = request.form['group_name']
+
+        cursor = conn.cursor()
+
+        q1 = 'INSERT INTO Share(id, group_name, username) VALUES (%s, %s, %s)'
+        cursor.execute(q1,(contentID, group_name, username))
+        flash('You have successfully shared the post with your group!', 'success')
+        conn.commit()
+        cursor.close()
+        return redirect(url_for('dashboard') )
+
+    else:
+        flash('Timed out, please login again', 'danger')
+        return redirect(url_for('login'))
+
+
+# @app.route('/deletepost', methods=['GET', 'POST'])
+# def deleteposts:
+#     # delete all tags
+#     q1 = "DELETE FROM Tag WHERE id = %s"
+#     # delete all comments
+#     q2 = "DELETE FROM Comment WHERE id = %s"
+#     # delete post
+#     q3 = "DELETE FROM Content WHERE id = %s"
+
 
 @app.route('/comment', methods=['GET','POST'])
 def comment():
@@ -490,6 +536,8 @@ def tag():
         flash('Timed out, please login again', 'danger')
         return redirect(url_for('login'))
 
+'''
+#old tag function, new one displays the content of pending tags
 @app.route("/tags")
 def tags():
     username = session['username']
@@ -499,6 +547,37 @@ def tags():
     conn.commit()
     cur.close()
     return render_template("tags.html", pendingTags=pendingTags)
+    if 'logged_in' in session:
+        username = session['username']
+        cur = conn.cursor()
+        cur.execute('SELECT username_tagger, id FROM Tag WHERE username_taggee = %s AND status = 0', username)
+        pendingTags = cur.fetchall()
+        conn.commit()
+        cur.close()
+        return render_template("tags.html", pendingTags=pendingTags)
+    else:
+        flash('Timed out, please login again', 'danger')
+        return redirect(url_for('login'))
+'''
+
+#displays pending tags
+@app.route("/tags")
+def tags():
+    if 'logged_in' in session:
+        username = session['username']
+        cur = conn.cursor()
+        cur.execute('SELECT username_tagger, Content.id, content_name \
+        FROM Tag JOIN Content\
+        ON Content.id = Tag.id\
+        WHERE username_taggee = %s AND status = 0', username)
+        pendingTags = cur.fetchall()
+        conn.commit()
+        cur.close()
+
+        return render_template("tags.html", pendingTags=pendingTags)
+    else:
+            flash('Timed out, please login again', 'danger')
+            return redirect(url_for('login'))
 
 @app.route('/manageTags', methods=['GET', 'POST'])
 def manageTags():
@@ -646,6 +725,3 @@ def add_groups():
 if __name__ == '__main__':
     app.secret_key = "It's a secret to everybody"
     app.run(debug=True)
-
-
-

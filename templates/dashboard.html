@@ -52,8 +52,6 @@
 
     <h2>Posts You Created</h2>
     <table class = "table">
-        <h2> Posts you made </h2>
-
         <!--Table head-->
         <thead class="blue-grey lighten-4">
             <tr>
@@ -61,6 +59,7 @@
                 <th>Post</th>
                 <th>Tag</th>
                 <th>Comment</th>
+                <th>Share</th>
             </tr>
         </thead>
         {% for line in posts %}
@@ -99,6 +98,17 @@
                         <input type="hidden" name="commentID" value="{{line.id}}">
                         <input type="text" name="comment" placeholder="Comment">
                         <button type="submit">Add</button>
+                    </form>
+                </td>
+                <td>
+                    <form action="/sharepost" method="POST">
+                        <input type="hidden" name="contentID" value="{{line.id}}">
+                        <select name="group_name">
+                            {% for group in groups %}
+                        <option value="{{group.group_name}}">{{ group.group_name }}</option>    
+                        {% endfor %}
+                        </select>
+                        <button type="submit">Share</button>
                     </form>
                 </td>
             </tr>
@@ -158,4 +168,75 @@
             </tr>
         {% endfor %}
     </table>
+
+    <table class = "table">
+            <!--Table head-->
+            <h>Posts You Are Tagged In</h>
+            <thead class="blue-grey lighten-4">
+                <tr>
+                    <th>Time</th>
+                    <th>Post</th>
+                    <th>Tag</th>
+                    <th>Comment</th>
+                </tr>
+            </thead>
+    
+            {% for line2 in taggedPosts %}
+                <tr>
+                    <td>{{line2.timest}}</td>
+                    <td>{{line2.content_name}}</td>
+                    <td>
+                        <p>{{line2.tags}}</p>
+                        <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal1">Add</button>
+                        <div id="myModal1" class="modal fade" role="dialog">
+                            <div class="modal-dialog">
+    
+                            <!-- Modal content-->
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">Tag</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form action="/tag" method="POST">
+                                            <input type="hidden" name="contentID" value="{{line.id}}">
+                                            <input type="text" name="taggee" placeholder="Username">
+                                            <button type="submit">Tag</button>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                    </td>
+                    <td>
+                        <p>{{line2.comments}}</p>
+                        <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal2">Add</button>
+                        <div id="myModal2" class="modal fade" role="dialog">
+                            <div class="modal-dialog">
+    
+                            <!-- Modal content-->
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">Comment</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form action="/comment" method="POST">
+                                            <input type="hidden" name="commentID" value="{{line.id}}">
+                                            <input type="text" name="comment" placeholder="Comment">
+                                            <button type="submit">Comment</button>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
 {% endblock %}
