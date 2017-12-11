@@ -19,21 +19,21 @@ app = Flask(__name__)
 #                        cursorclass=pymysql.cursors.DictCursor)
 
 # ashley
-conn = pymysql.connect(host='localhost',
-                        user='root',
-                        password='root',
-                        port=8889,
-                        db='Pricosha',
-                        charset='utf8mb4',
-                        cursorclass=pymysql.cursors.DictCursor)
+# conn = pymysql.connect(host='localhost',
+#                         user='root',
+#                         password='root',
+#                         port=8889,
+#                         db='Pricosha',
+#                         charset='utf8mb4',
+#                         cursorclass=pymysql.cursors.DictCursor)
 
 # hui
-#conn = pymysql.connect(host='localhost',
-#                       user='root',
-#                       password='password',
-#                       db='Pricosha',
-#                       charset='utf8mb4',
-#                       cursorclass=pymysql.cursors.DictCursor)
+conn = pymysql.connect(host='localhost',
+                       user='root',
+                       password='password',
+                       db='Pricosha',
+                       charset='utf8mb4',
+                       cursorclass=pymysql.cursors.DictCursor)
 
 # timeout function
 @app.before_request
@@ -261,21 +261,39 @@ def dashboard():
     id DESC'
     cursor.execute(query, (username))
     data = cursor.fetchall()
-    print(data)
     
     query2= 'SELECT timest, comment_text, id, username FROM Comment WHERE username = %s ORDER BY id DESC'
     cursor.execute(query2, (username))
     comments = cursor.fetchall()
-    print(data)
     
     query3 = 'SELECT timest, username_taggee, id FROM Tag ORDER BY\
     id DESC'
     cursor.execute(query3,)
     tags = cursor.fetchall()
-    cursor.close()
-    print(data)
+    # cursor.close()
     
-    return render_template('dashboard.html', username=username, posts=data, comments=comments, tags = tags)
+    query4 = 'SELECT group_name FROM FriendGroup'
+    cursor.execute(query4,)
+    groups = cursor.fetchall()
+    cursor.close()
+
+    print(groups)
+
+    #cursor = conn.cursor()
+
+    ##user can see all the posts that they made
+    #tagged_query = 'SELECT DISTINCT content.timest, content_name, content.id \
+    #FROM Content JOIN Tag \
+    #ON Content.id = Tag.id \
+    #WHERE (username_taggee = %s) \
+    #ORDER BY  timest DESC'
+    #cursor.execute(tagged_query,(username))
+    #data2 = cursor.fetchall()
+
+    # return render_template('dashboard.html', username=username, posts=data,\
+    #         comments=comments, tags = tags, taggedposts=data2)
+    return render_template('dashboard.html', username=username, posts=data,\
+            comments=comments, tags = tags, groups = groups)
 
 @app.route('/addfriends', methods=['GET','POST'])
 def add_friends():
