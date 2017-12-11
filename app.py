@@ -250,26 +250,25 @@ def add_friend():
     query1 = "SELECT COUNT(*) FROM Person WHERE first_name = %s && last_name = %s"
     if (cur.execute(query1, (username, group_name)) > 1):
         flash("There are more than one person with the entered name.")
-
-
-    query2 = "SELECT * FROM Member WHERE username = %s && group_name = %s"
-    cur.execute(query2, (username, group_name))
-    data = cur.fetchone()
-
-#error = None
-
-if (data):
-    #error = "This friend is already in your friend group!"
-    flash('This friend is already in your friend group!')
-        return render_template('addfriend.html')
-    #return render_template('addfriend.html', error = error)
+        return render_template('altaddfriend.html')
     else:
-        query1 = "INSERT INTO Member(username, group_name, username_creator) VALUES(%s, %s, %s)"
-        cur.execute(query1, (username, group_name, username_creator))
-        conn.commit()
-        cur.close()
-        flash('Your friend has been added to your friend group!')
-        return render_template('addfriend.html')
+
+        query2 = "SELECT * FROM Member WHERE username = %s && group_name = %s"
+        cur.execute(query2, (username, group_name))
+        data = cur.fetchone()
+
+        if (data):
+    #error = "This friend is already in your friend group!"
+            flash('This friend is already in your friend group!')
+            return render_template('addfriend.html')
+    #return render_template('addfriend.html', error = error)
+        else:
+            query1 = "INSERT INTO Member(username, group_name, username_creator) VALUES(%s, %s, %s)"
+            cur.execute(query1, (username, group_name, username_creator))
+            conn.commit()
+            cur.close()
+            flash('Your friend has been added to your friend group!')
+            return render_template('addfriend.html')
 
 @app.route('/deletefriend', methods=['GET','POST'])
 def delete_friend():
