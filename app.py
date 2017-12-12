@@ -275,6 +275,7 @@ def dashboard():
     query4 = 'SELECT group_name FROM FriendGroup WHERE username = %s'
     cursor.execute(query4,(username))
     groups = cursor.fetchall()
+
     cursor.close()
 
     cursor = conn.cursor()
@@ -286,9 +287,12 @@ def dashboard():
     ORDER BY timest DESC'
     cursor.execute(tagged_query,(username))
     data2 = cursor.fetchall()
+
+    # shared_posts = 
     cursor.close()
     
-    return render_template('dashboard.html', username=username, posts=data, comments=comments, tags = tags, taggedposts = data2)
+    return render_template('dashboard.html', username=username, posts=data,\
+            comments=comments, tags = tags, taggedposts = data2, groups=groups)
     # return render_template('dashboard.html', username=username, posts=data,\
     #         comments=comments, tags = tags, groups = groups)
     
