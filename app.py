@@ -278,33 +278,22 @@ def dashboard():
 
     print(groups)
 
-    #cursor = conn.cursor()
+    cursor = conn.cursor()
 
-    ##user can see all the posts that they made
-    #tagged_query = 'SELECT DISTINCT content.timest, content_name, content.id \
-    #FROM Content JOIN Tag \
-    #ON Content.id = Tag.id \
-    #WHERE (username_taggee = %s) \
-    #ORDER BY  timest DESC'
-    #cursor.execute(tagged_query,(username))
-    #data2 = cursor.fetchall()
-
-    # return render_template('dashboard.html', username=username, posts=data,\
-    #         comments=comments, tags = tags, taggedposts=data2)
-    return render_template('dashboard.html', username=username, posts=data,\
-            comments=comments, tags = tags, groups = groups)
-    
-    #user can see all the posts that they made
-    tagged_query = 'SELECT DISTINCT content.timest, content_name, content.id \
+    tagged_query = 'SELECT DISTINCT Content.timest, content_name, Content.id \
     FROM Content JOIN Tag \
     ON Content.id = Tag.id \
     WHERE (username_taggee = %s) AND (status = 1) \
-    ORDER BY  timest DESC'
+    ORDER BY timest DESC'
     cursor.execute(tagged_query,(username))
     data2 = cursor.fetchall()
     cursor.close()
     
     return render_template('dashboard.html', username=username, posts=data, comments=comments, tags = tags, taggedposts = data2)
+    # return render_template('dashboard.html', username=username, posts=data,\
+    #         comments=comments, tags = tags, groups = groups)
+    
+    #user can see all the posts that they made
 
 @app.route('/addfriends', methods=['GET','POST'])
 def add_friends():
@@ -492,13 +481,17 @@ def tag():
 
 @app.route("/tags")
 def tags():
-    username = session['username']
-    cur = conn.cursor()
-    cur.execute('SELECT username_tagger, Content.id, content_name FROM Tag JOIN Content ON Content.id = Tag.id WHERE username_taggee = %s AND status = 0', username)
-    pendingTags = cur.fetchall()
-    conn.commit()
-    cur.close()
-    return render_template("tags.html", pendingTags=pendingTags)
+    if 'logged_in' in session:
+        username = session['username']
+        cur = conn.cursor()
+        cur.execute('SELECT username_tagger, Content.id, content_name FROM Tag JOIN Content ON Content.id = Tag.id WHERE username_taggee = %s AND status = 0', username)
+        pendingTags = cur.fetchall()
+        conn.commit()
+        cur.close()
+        return render_template("tags.html", pendingTags=pendingTags)
+    else:
+        flash('Timed out, please login again', 'danger')
+        return redirect(url_for('login'))
 
 @app.route('/manageTags', methods=['GET', 'POST'])
 def manageTags():
