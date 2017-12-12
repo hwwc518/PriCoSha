@@ -121,7 +121,7 @@
     </table>
 
     <br />
-    <h2>Tagged / Shared Posts</h2>
+    <h2>Tagged Posts</h2>
     <table class = "table">
         <!--Table head-->
         <thead class="blue-grey lighten-4">
@@ -174,4 +174,58 @@
         {% endfor %}
     </table>
 
+    <br />
+    <h2>Shared Posts</h2>
+    <table class = "table">
+        <!--Table head-->
+        <thead class="blue-grey lighten-4">
+            <tr>
+                <th>Time</th>
+                <th>Post</th>
+                <th>Tag</th>
+                <th>Comment</th>
+            </tr>
+        </thead>
+        <!-- shared posts -->
+        {% for line in shared_posts %}
+            <tr>
+                <td>{{line.timest}}</td>
+                <td>{{line.content_name}}</td>
+                <td>
+<!--                    <input type="button" onclick="showTags();" value="Click" />-->
+                    <div id="showtags">
+                        {% for tag in tags %}
+                            {% if line.id == tag.id %}
+                                <p>{{tag.first_name}} {{tag.last_name}} ({{tag.username_taggee}})</p>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    <br/>
+                    
+                    <form action="/tag" method="POST">
+                        <input type="hidden" name="contentID" value="{{line.id}}">
+                        <input type="text" name="taggee" placeholder="Username">
+                        <button type="submit">Tag</button>
+                    </form>
+                </td>
+                <td>
+<!--                    <input type="button" onclick="showComments();" value="Click" />-->
+                    <div id="showcomments">
+                        {% for com in comments %} 
+                            {% if line.id == com.id %}
+                                <p>{{com.timest}}: {{com.username}}: {{com.comment_text}}</p>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    <form action="/comment" method="POST">
+                        <input type="hidden" name="commentID" value="{{line.id}}">
+                        <input type="text" name="comment" placeholder="Comment">
+                        <button type="submit">Add</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
 {% endblock %}

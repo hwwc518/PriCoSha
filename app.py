@@ -287,13 +287,21 @@ def dashboard():
     ORDER BY timest DESC'
     cursor.execute(tagged_query,(username))
     data2 = cursor.fetchall()
+    print(data2)
 
     # shared_posts, comments, tags
+    shared_query = "SELECT DISTINCT timest, Share.id, content_name \
+    from Share join Content on Share.id = Content.id join Member on Share.group_name = Member.group_name \
+    where Member.username = %s ORDER BY timest DESC"
+    cursor.execute(shared_query,(username))
+    data3 = cursor.fetchall()
+    print(data3)
 
     cursor.close()
     
     return render_template('dashboard.html', username=username, posts=data,\
-            comments=comments, tags = tags, taggedposts = data2, groups=groups)
+            comments=comments, tags = tags, taggedposts = data2, groups=groups,\
+            shared_posts = data3)
     
     #user can see all the posts that they made
 
