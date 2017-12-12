@@ -288,13 +288,12 @@ def dashboard():
     cursor.execute(tagged_query,(username))
     data2 = cursor.fetchall()
 
-    # shared_posts = 
+    # shared_posts, comments, tags
+
     cursor.close()
     
     return render_template('dashboard.html', username=username, posts=data,\
             comments=comments, tags = tags, taggedposts = data2, groups=groups)
-    # return render_template('dashboard.html', username=username, posts=data,\
-    #         comments=comments, tags = tags, groups = groups)
     
     #user can see all the posts that they made
 
@@ -535,7 +534,7 @@ def tag():
                 status = 0
                 query = cur.execute('INSERT INTO Tag (id, username_tagger, username_taggee, status)\
                 VALUES(%s, %s, %s, %s)',(contentID, tagger, taggee, status))
-                flash('You have tagged ' + taggee + ' in this content!')
+                flash('You have tagged ' + taggee + ' in this content!','success')
             conn.commit()
             cur.close()
             return redirect(url_for('dashboard'))
