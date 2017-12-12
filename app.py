@@ -430,6 +430,7 @@ def post():
     elif p_status == False:
         groupNames = request.form['groupNames']
         listOfGroupNames = groupNames.split(',')
+
         cursor = conn.cursor()
         for group in listOfGroupNames:
             query = 'INSERT INTO Share (id, group_name, username) VALUES (%s, %s, %s)'
@@ -462,15 +463,39 @@ def sharepost():
         flash('Timed out, please login again', 'danger')
         return redirect(url_for('login'))
 
+#The user can only delete post that THEY themselves created
+#Once the post is deleted, then all the tags and comments 
+#related to that post is deleted along with the post itself
+@app.route('/deletepost', methods=['GET', 'POST'])
+def deletepost():
+    if 'logged_in' in session:
+        contentID = request.form['contentID']
 
-# @app.route('/deletepost', methods=['GET', 'POST'])
-# def deleteposts:
-#     # delete all tags
-#     q1 = "DELETE FROM Tag WHERE id = %s"
-#     # delete all comments
-#     q2 = "DELETE FROM Comment WHERE id = %s"
-#     # delete post
-#     q3 = "DELETE FROM Content WHERE id = %s"
+        cur=conn.cursor()
+
+        # delete all tags
+        q1 = "DELETE FROM Tag WHERE id = %s"
+        cur.execute(q1,(contentID))
+
+        # delete all comments
+        q2 = "DELETE FROM Comment WHERE id = %s"
+        cur.execute(q2, (contentID))
+
+        q4 = "DELETE FROM Share WHERE id = %s"
+        cur.execute(q4,(contentID))
+
+        # delete post
+        q3 = "DELETE FROM Content WHERE id = %s"
+        cur.execute(q3,(contentID))
+
+        flash('You have deleted your post!', 'danger')
+        conn.commit()
+        cur.close()
+        return redirect(url_for('dashboard'))
+
+    else:
+        flash('Timed out, please login again', 'danger')
+        return redirect(url_for('login'))
 
 
 @app.route('/comment', methods=['GET','POST'])
@@ -499,7 +524,6 @@ def tag():
         tagger = session['username']
         taggee = request.form['taggee']
         contentID = request.form['contentID']
-        print(request.form)
 
         #select content
         cur = conn.cursor()
