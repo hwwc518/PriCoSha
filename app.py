@@ -10,13 +10,13 @@ import pymysql.cursors
 app = Flask(__name__)
 
 #hoyin
-conn = pymysql.connect(host='localhost',
-                       user='root',
-                       password='root',
-                       port=8889,
-                       db='pricosha01',
-                       charset='utf8mb4',
-                       cursorclass=pymysql.cursors.DictCursor)
+# conn = pymysql.connect(host='localhost',
+#                        user='root',
+#                        password='root',
+#                        port=8889,
+#                        db='pricosha01',
+#                        charset='utf8mb4',
+#                        cursorclass=pymysql.cursors.DictCursor)
 
 # ashley
 # conn = pymysql.connect(host='localhost',
@@ -27,22 +27,13 @@ conn = pymysql.connect(host='localhost',
 #                         charset='utf8mb4',
 #                         cursorclass=pymysql.cursors.DictCursor)
 
-# ashley
-#conn = pymysql.connect(host='localhost',
-#                        user='root',
-#                        password='root',
-#                        port=8889,
-#                        db='Pricosha',
-#                        charset='utf8mb4',
-#                        cursorclass=pymysql.cursors.DictCursor)
-
 # hui
-#conn = pymysql.connect(host='localhost',
-#                       user='root',
-                    #    password='password',
-                    #    db='Pricosha',
-                    #    charset='utf8mb4',
-                    #    cursorclass=pymysql.cursors.DictCursor)
+conn = pymysql.connect(host='localhost',
+                       user='root',
+                        password='password',
+                        db='Pricosha',
+                        charset='utf8mb4',
+                        cursorclass=pymysql.cursors.DictCursor)
 
 # timeout function
 @app.before_request
@@ -286,8 +277,6 @@ def dashboard():
     groups = cursor.fetchall()
     cursor.close()
 
-    print(groups)
-
     cursor = conn.cursor()
 
     tagged_query = 'SELECT DISTINCT Content.timest, content_name, Content.id \
@@ -404,29 +393,35 @@ def post():
         content_name = request.form['content_name']
         p_status = False if request.form.get('p_status') else True
 
-        query = 'INSERT INTO Content (content_name, username, public) VALUES(%s, %s, %s)'
-        cursor.execute(query, (content_name, username, p_status))
+        if p_status == True:
+            query = 'INSERT INTO Content (content_name, username, public) VALUES(%s, %s, %s)'
+            cursor.execute(query, (content_name, username, p_status))
 
-        maxValQuery = 'SELECT MAX(id) FROM Content'
-        cursor.execute(maxValQuery)
-        maxVal = cursor.fetchone()
-        maxVal = maxVal['MAX(id)']
-        conn.commit()
-        cursor.close()
-        flash('You have successfully posted!', 'success')
-        return redirect(url_for('dashboard'))
+            conn.commit()
+            cursor.close()
+            flash('You have successfully posted!', 'success')
+            return redirect(url_for('dashboard'))
 
-    elif p_status == False:
-        groupNames = request.form['groupNames']
-        listOfGroupNames = groupNames.split(',')
+        elif p_status == False:
+            query = 'INSERT INTO Content (content_name, username, public) VALUES(%s, %s, %s)'
+            cursor.execute(query, (content_name, username, p_status))
 
-        cursor = conn.cursor()
-        for group in listOfGroupNames:
-            query = 'INSERT INTO Share (id, group_name, username) VALUES (%s, %s, %s)'
-            cursor.execute(query, (maxVal, group, username))
-        conn.commit()
-        cursor.close()
-        return redirect(url_for('dashboard'))
+            maxValQuery = 'SELECT MAX(id) FROM Content'
+            cursor.execute(maxValQuery)
+            maxVal = cursor.fetchone()
+            maxVal = maxVal['MAX(id)']
+
+            groupNames = request.form['groupNames']
+            listOfGroupNames = groupNames.split(',')
+
+            cursor = conn.cursor()
+            for group in listOfGroupNames:
+                query = 'INSERT INTO Share (id, group_name, username) VALUES (%s, %s, %s)'
+                cursor.execute(query, (maxVal, group, username))
+            conn.commit()
+            cursor.close()
+            flash('You have successfully posted to private group', 'success')
+            return redirect(url_for('dashboard'))
 
     else:
         flash('Timed out, please login again', 'danger')
@@ -477,7 +472,7 @@ def deletepost():
         q3 = "DELETE FROM Content WHERE id = %s"
         cur.execute(q3,(contentID))
 
-        flash('You have deleted your post!', 'danger')
+        flash('You have deleted your post!', 'success')
         conn.commit()
         cur.close()
         return redirect(url_for('dashboard'))
@@ -565,8 +560,8 @@ def tags():
 
         return render_template("tags.html", pendingTags=pendingTags)
     else:
-            flash('Timed out, please login again', 'danger')
-            return redirect(url_for('login'))
+        flash('Timed out, please login again', 'danger')
+        return redirect(url_for('login'))
 
 @app.route('/manageTags', methods=['GET', 'POST'])
 def manageTags():
