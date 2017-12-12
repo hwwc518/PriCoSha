@@ -1,1 +1,13 @@
-Since the concept of friends in this project simply means being in same friend groups, we first deleted the person from the group. When the user heads over to Friends tab, he/she will see two different options: Add or Delete. If the user wishes to delete a friend from a friend group, he/she can simply enter the friend\'92s username, group name, and the group\'92s creator\'92s username to delete the person from the group.
+Since the concept of friends in this project simply means being in same friend groups, we first deleted the person from the group. When the user heads over to Friends tab, he/she will see two different options: Add or Delete. If the user wishes to delete a friend from a friend group, he/she can simply enter the friend\'92s username, group name, and the group\'92s creator\'92s username to delete the person from the group.
+To implement the tag function in defriend, it would be reasonable to delete all tags that were associated with the user and the person who was defriended. The proper query to use once you delete a friend the following:
+
+EXAMPLE: If bob123 defriended alice111
+
+DELETE FROM Tag 
+WHERE
+(username_taggee =  bob123 && username_tagger = alice111) 
+OR 
+(username_taggee =  alice111 && username_tagger = bob123)
+
+So any tags that contain Alice AND Bob will be deleted in the database. 
+

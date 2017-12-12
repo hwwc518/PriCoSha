@@ -52,8 +52,6 @@
 
     <h2>Posts You Created</h2>
     <table class = "table">
-        <h2> Posts you made </h2>
-
         <!--Table head-->
         <thead class="blue-grey lighten-4">
             <tr>
@@ -61,6 +59,8 @@
                 <th>Post</th>
                 <th>Tag</th>
                 <th>Comment</th>
+                <th>Share</th>
+                <th>Delete</th>
             </tr>
         </thead>
         {% for line in posts %}
@@ -100,6 +100,24 @@
                         <input type="text" name="comment" placeholder="Comment">
                         <button type="submit">Add</button>
                     </form>
+                </td>
+                <td>
+                    <form action="/sharepost" method="POST">
+                        <input type="hidden" name="contentID" value="{{line.id}}">
+                        <select name="group_name">
+                            {% for group in groups %}
+                        <option value="{{group.group_name}}">{{ group.group_name }}</option>    
+                        {% endfor %}
+                        </select>
+                        <button type="submit">Share</button>
+                    </form>
+
+                </td>
+                <td>
+                        <form action="/deletepost" method="POST">
+                            <input type="hidden" name="contentID" value="{{line.id}}">
+                            <button type="submit" class="btn btn-primary" value="Delete">Delete Post</button>
+                        </form>
                 </td>
             </tr>
         {% endfor %}
@@ -158,4 +176,5 @@
             </tr>
         {% endfor %}
     </table>
+
 {% endblock %}
