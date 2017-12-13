@@ -257,12 +257,12 @@ def logout():
 def dashboard():
     username = session['username']
     cursor = conn.cursor()
-    query = 'SELECT timest, content_name, id FROM Content WHERE username = %s ORDER BY\
-    id DESC'
+    query = 'SELECT timest, content_name, id FROM Content WHERE username = %s OR public = 1 ORDER BY id DESC'
     cursor.execute(query, (username))
     data = cursor.fetchall()
     
-    query2= 'SELECT timest, comment_text, id, username FROM Comment WHERE username = %s ORDER BY id DESC'
+    # pull comments from content, share and tag
+    query2 = 'SELECT Comment.timest, comment_text, Comment.id, Comment.username FROM Comment JOIN Content on Comment.id = Content.id WHERE public = 1 or Content.username = %s ORDER BY id DESC'    
     cursor.execute(query2, (username))
     comments = cursor.fetchall()
         
@@ -276,9 +276,9 @@ def dashboard():
     cursor.execute(query4,(username))
     groups = cursor.fetchall()
 
-    cursor.close()
+    # cursor.close()
 
-    cursor = conn.cursor()
+    # cursor = conn.cursor()
 
     tagged_query = 'SELECT DISTINCT Content.timest, content_name, Content.id \
     FROM Content JOIN Tag \
