@@ -157,7 +157,7 @@
                 <td>
 <!--                    <input type="button" onclick="showComments();" value="Click" />-->
                     <div id="showcomments">
-                        {% for com in comments %} 
+                        {% for com in comments_tagged %} 
                             {% if line.id == com.id %}
                                 <p>{{com.timest}}: {{com.username}}: {{com.comment_text}}</p>
                             {% endif %}
@@ -212,7 +212,7 @@
                 <td>
 <!--                    <input type="button" onclick="showComments();" value="Click" />-->
                     <div id="showcomments">
-                        {% for com in comments %} 
+                        {% for com in comments_shared %} 
                             {% if line.id == com.id %}
                                 <p>{{com.timest}}: {{com.username}}: {{com.comment_text}}</p>
                             {% endif %}

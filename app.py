@@ -280,28 +280,34 @@ def dashboard():
 
     # cursor = conn.cursor()
 
-    tagged_query = 'SELECT DISTINCT Content.timest, content_name, Content.id \
-    FROM Content JOIN Tag \
-    ON Content.id = Tag.id \
-    WHERE (username_taggee = %s) AND (status = 1) \
-    ORDER BY timest DESC'
+    tagged_query = 'SELECT DISTINCT Content.timest, content_name, Content.id FROM Content JOIN Tag ON Content.id = Tag.id WHERE (username_taggee = %s) AND (status = 1) ORDER BY timest DESC'
     cursor.execute(tagged_query,(username))
     data2 = cursor.fetchall()
-    print(data2)
+
+    tagged_comments = 'SELECT DISTINCT Comment.id, Comment.timest, comment_text, Comment.username\
+    FROM Comment JOIN Tag on Comment.id = Tag.id WHERE status = 1 and username_taggee = %s ORDER BY id DESC'
+    cursor.execute(tagged_comments,(username))
+    comments_tagged = cursor.fetchall()
 
     # shared_posts, comments, tags
     shared_query = "SELECT DISTINCT timest, Share.id, content_name \
     from Share join Content on Share.id = Content.id join Member on Share.group_name = Member.group_name \
-    where Member.username = %s ORDER BY timest DESC"
+    where Member.username = %s order by timest desc"
     cursor.execute(shared_query,(username))
     data3 = cursor.fetchall()
-    print(data3)
+
+    shared_comments = 'SELECT DISTINCT Comment.id, Comment.timest, comment_text, Comment.username \
+    FROM Comment JOIN Share on Comment.id = Share.id JOIN Member on Share.group_name = Member.group_name \
+    where Member.username = %s order by timest desc' 
+    cursor.execute(shared_comments,(username))
+    comments_shared = cursor.fetchall()
 
     cursor.close()
     
     return render_template('dashboard.html', username=username, posts=data,\
             comments=comments, tags = tags, taggedposts = data2, groups=groups,\
-            shared_posts = data3)
+            shared_posts = data3, comments_tagged = comments_tagged, \
+            comments_shared = comments_shared)
     
     #user can see all the posts that they made
 
@@ -532,7 +538,6 @@ def tag():
             #Case 1: if user is self-tagging
             if taggee == tagger:
                 status = 1
-                print(contentID, tagger, taggee, status)
                 query = cur.execute('INSERT INTO Tag (id, username_tagger, username_taggee, status)\
                 VALUES(%s, %s, %s, %s)' , (contentID, tagger, taggee, status))
 
@@ -621,19 +626,16 @@ def delete_group():
         data = cursor.fetchone()
         #check if the group exists
         if (cursor.execute(query1, (username, group_name)) == 0):
-            print("Inside if")
             flash("The group doesn't exist!", "danger")
             conn.commit()
             return redirect(url_for('creategroup'))
         #check if the user is the creator... only giving creator the permission to delete the group
         elif (data["username"] != username):
-            print("Inside elif")
             flash("You do not have the permission to delete this group!", "danger")
             conn.commit()
             return redirect(url_for('creategroup'))
         
         else:
-            print("Inside else")
             query3 = 'SELECT * FROM Member WHERE group_name = %s'
             cursor.execute(query3, group_name)
             data2 = cursor.fetchall()
@@ -689,10 +691,8 @@ def add_groups():
         invalidMems = []
         for mem in listMems:
             # verify if member is valid
-            print(mem)
             query5 = 'SELECT * FROM Person WHERE username = %s'
             val = cursor.execute(query5, mem)
-            print(val)
             if (val == 1):
                 query6 = 'INSERT INTO Member (username, group_name, username_creator) VALUES(%s, %s, %s)'
                 cursor.execute(query6, (mem, group_name, creator))
