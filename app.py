@@ -1,6 +1,5 @@
 from flask import Flask, flash, app, request, session, render_template, url_for,\
 logging, redirect
-# from flask_mysqldb import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from functools import wraps
@@ -534,7 +533,17 @@ def tag():
         query = cur.execute('SELECT * FROM Person WHERE username = %s',\
                 [taggee])
 
-        if (query > 0): 
+        if (query > 0):
+            # Handles if user is not in shared with group and post is not public
+            TagData = cur.execute('SELECT * FROM Share join Content on Share.id = Content.id join Member on Share.group_name = Member.group_name where Member.username = %s and Share.id = %s', (taggee, contentID))
+            PublicData = cur.execute('SELECT * FROM Content WHERE public=1 and id=%s',(contentID))
+            
+            if (!TagData and !PublicData){
+                flash("User is not allowed to view Content, so can't be tagged",'danger')
+                cur.close()
+                return redirect(url_for("dashboard"))
+            } 
+            
             #Case 1: if user is self-tagging
             if taggee == tagger:
                 status = 1
