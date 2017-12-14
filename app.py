@@ -19,21 +19,21 @@ app = Flask(__name__)
 #                        cursorclass=pymysql.cursors.DictCursor)
 
 # ashley
-# conn = pymysql.connect(host='localhost',
-#                         user='root',
-#                         password='root',
-#                         port=8889,
-#                         db='Pricosha',
-#                         charset='utf8mb4',
-#                         cursorclass=pymysql.cursors.DictCursor)
+conn = pymysql.connect(host='localhost',
+                         user='root',
+                         password='root',
+                         port=8889,
+                         db='Pricosha1',
+                         charset='utf8mb4',
+                         cursorclass=pymysql.cursors.DictCursor)
 
 # hui
-conn = pymysql.connect(host='localhost',
-                       user='root',
-                        password='password',
-                        db='Pricosha',
-                        charset='utf8mb4',
-                        cursorclass=pymysql.cursors.DictCursor)
+#conn = pymysql.connect(host='localhost',
+#                       user='root',
+#                        password='password',
+#                        db='Pricosha',
+#                        charset='utf8mb4',
+#                        cursorclass=pymysql.cursors.DictCursor)
 
 # timeout function
 @app.before_request
